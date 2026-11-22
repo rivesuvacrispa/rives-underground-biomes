@@ -1,0 +1,56 @@
+plugins {
+    id 'fabric-loom' version '1.7.4'
+    id 'com.diffplug.spotless' version '8.11.0'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    maven { url = 'https://maven.blamejared.com/' }
+}
+
+fabricApi {
+    configureDataGeneration()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modLocalRuntime "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_runtime_version}"
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 17
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+spotless {
+    java {
+        target 'src/**/*.java'
+        palantirJavaFormat('2.103.0')
+        importOrder('', 'javax|java', '\\#')
+    }
+}

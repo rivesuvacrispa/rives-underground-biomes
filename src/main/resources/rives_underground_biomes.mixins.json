@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.rivesuvacrispa.rivesundergroundbiomes.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "ChunkGeneratorMixin",
+    "HolderReferenceAccessor",
+    "HuskMixin",
+    "MultiNoiseBiomeSourceMixin",
+    "StrayMixin"
+  ],
+  "client": [
+    "client.FogRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "rives_underground_biomes",
+  "version": "${version}",
+  "name": "Rives Underground Biomes",
+  "description": "Extends jungle, desert and cold biomes all the way down to bedrock",
+  "authors": [
+    "RivesUvaCrispa"
+  ],
+  "license": "All-Rights-Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.rivesuvacrispa.rivesundergroundbiomes.RivesUndergroundBiomes"
+    ],
+    "client": [
+      "com.rivesuvacrispa.rivesundergroundbiomes.client.RivesUndergroundBiomesClient"
+    ],
+    "fabric-datagen": [
+      "com.rivesuvacrispa.rivesundergroundbiomes.datagen.RubDataGenerator"
+    ]
+  },
+  "mixins": [
+    "rives_underground_biomes.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "fabric-api": "*",
+    "minecraft": "1.20.1",
+    "java": ">=17"
+  },
+  "suggests": {
+    "create": "*"
+  }
+}
