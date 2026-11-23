@@ -3,6 +3,10 @@ package com.rivesuvacrispa.rivesundergroundbiomes;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.Conversions;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -33,5 +37,12 @@ public class RivesUndergroundBiomes implements ModInitializer {
                         .icon(() -> new ItemStack(ModBlocks.SANDSLATE))
                         .displayItems((params, output) -> ModBlocks.ALL_ITEMS.forEach(output::accept))
                         .build());
+
+        // Built in resource packs to make other cave mods overwrite ours
+        ModContainer mod = FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow();
+        ResourceManagerHelper.registerBuiltinResourcePack(
+                id("keep_terralith_caves"), mod, "Terralith caves overwrite Rives'", ResourcePackActivationType.NORMAL);
+        ResourceManagerHelper.registerBuiltinResourcePack(
+                id("keep_yungs_caves"), mod, "YUNG's caves overwrite Rives'", ResourcePackActivationType.NORMAL);
     }
 }

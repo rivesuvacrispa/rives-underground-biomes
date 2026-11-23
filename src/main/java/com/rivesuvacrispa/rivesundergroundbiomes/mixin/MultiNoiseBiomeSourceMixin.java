@@ -1,9 +1,8 @@
 package com.rivesuvacrispa.rivesundergroundbiomes.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.BiomeSwap;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.biome.Biome;
@@ -45,23 +44,13 @@ public abstract class MultiNoiseBiomeSourceMixin {
         return biomes.length == 0 ? original : Stream.concat(original, Arrays.stream(biomes));
     }
 
-    @WrapOperation(
-            method = "getNoiseBiome(IIILnet/minecraft/world/level/biome/Climate$Sampler;)Lnet/minecraft/core/Holder;",
-            at =
-                    @At(
-                            value = "INVOKE",
-                            target =
-                                    "Lnet/minecraft/world/level/biome/MultiNoiseBiomeSource;getNoiseBiome(Lnet/minecraft/world/level/biome/Climate$TargetPoint;)Lnet/minecraft/core/Holder;"))
+    // TerraBlender and Alex caves cancel it at head
+    @WrapMethod(
+            method = "getNoiseBiome(IIILnet/minecraft/world/level/biome/Climate$Sampler;)Lnet/minecraft/core/Holder;")
     private Holder<Biome> rub$swapUnderground(
-            MultiNoiseBiomeSource self,
-            Climate.TargetPoint target,
-            Operation<Holder<Biome>> original,
-            @Local(argsOnly = true, ordinal = 0) int x,
-            @Local(argsOnly = true, ordinal = 1) int y,
-            @Local(argsOnly = true, ordinal = 2) int z,
-            @Local(argsOnly = true) Climate.Sampler sampler) {
-        Holder<Biome> natural = original.call(self, target);
+            int x, int y, int z, Climate.Sampler sampler, Operation<Holder<Biome>> original) {
+        Holder<Biome> natural = original.call(x, y, z, sampler);
         Holder<Biome>[] biomes = rub$biomes();
-        return biomes.length == 0 ? natural : BiomeSwap.swap(self, biomes, natural, target, x, y, z, sampler);
+        return biomes.length == 0 ? natural : BiomeSwap.swap(parameters(), biomes, natural, x, y, z, sampler);
     }
 }

@@ -26,6 +26,7 @@ public enum Zone {
 
     @Nullable
     public static Zone ofSurface(Holder<Biome> biome) {
+        if (biome.is(ModBiomeTags.NO_UNDERGROUND_ZONE)) return null;
         for (Zone zone : VALUES) {
             if (biome.is(zone.surfaceTag)) return zone;
         }

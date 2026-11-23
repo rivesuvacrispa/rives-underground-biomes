@@ -7,7 +7,10 @@ import net.minecraft.world.level.biome.Biome;
 
 public final class ModBiomeTags {
     public static final TagKey<Biome> REPLACEABLE_CAVES = create("replaceable_caves");
+    public static final TagKey<Biome> TERRALITH_CAVES = create("replaceable_caves/terralith");
+    public static final TagKey<Biome> YUNGS_CAVES = create("replaceable_caves/yungs");
     public static final TagKey<Biome> INHERITS_NEIGHBOURS = create("inherits_neighbours");
+    public static final TagKey<Biome> NO_UNDERGROUND_ZONE = create("no_underground_zone");
 
     private static TagKey<Biome> create(String path) {
         return TagKey.create(Registries.BIOME, RivesUndergroundBiomes.id(path));

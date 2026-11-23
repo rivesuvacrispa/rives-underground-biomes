@@ -29,6 +29,10 @@ public final class TagProviders {
         return TagKey.create(registry, new ResourceLocation("c", path));
     }
 
+    static <T> TagKey<T> forge(ResourceKey<? extends Registry<T>> registry, String path) {
+        return TagKey.create(registry, new ResourceLocation("forge", path));
+    }
+
     public static class Blocks extends FabricTagProvider.BlockTagProvider {
         public Blocks(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registries) {
             super(output, registries);
@@ -129,10 +133,15 @@ public final class TagProviders {
         protected void addTags(HolderLookup.Provider registries) {
             getOrCreateTagBuilder(Zone.DESERT.surfaceTag)
                     .add(net.minecraft.world.level.biome.Biomes.DESERT)
-                    .addOptionalTag(c(Registries.BIOME, "desert"));
+                    .addOptionalTag(c(Registries.BIOME, "desert"))
+                    .addOptionalTag(c(Registries.BIOME, "is_desert"))
+                    .addOptionalTag(forge(Registries.BIOME, "is_desert"));
             getOrCreateTagBuilder(Zone.JUNGLE.surfaceTag)
                     .forceAddTag(BiomeTags.IS_JUNGLE)
-                    .addOptionalTag(c(Registries.BIOME, "jungle"));
+                    .addOptionalTag(c(Registries.BIOME, "jungle"))
+                    .addOptionalTag(c(Registries.BIOME, "is_jungle"))
+                    .addOptionalTag(new ResourceLocation("natures_spirit", "is_tropical_woods"))
+                    .addOptional(new ResourceLocation("regions_unexplored", "bamboo_forest"));
             getOrCreateTagBuilder(Zone.ICE.surfaceTag)
                     .add(
                             net.minecraft.world.level.biome.Biomes.SNOWY_PLAINS,
@@ -147,11 +156,32 @@ public final class TagProviders {
                             net.minecraft.world.level.biome.Biomes.FROZEN_PEAKS,
                             net.minecraft.world.level.biome.Biomes.JAGGED_PEAKS)
                     .addOptionalTag(c(Registries.BIOME, "snowy"))
-                    .addOptionalTag(c(Registries.BIOME, "icy"));
+                    .addOptionalTag(c(Registries.BIOME, "icy"))
+                    .addOptionalTag(c(Registries.BIOME, "is_snowy"))
+                    .addOptionalTag(c(Registries.BIOME, "is_icy"))
+                    .addOptionalTag(forge(Registries.BIOME, "is_snowy"))
+                    .addOptional(new ResourceLocation("biomeswevegone", "frosted_taiga"))
+                    .addOptional(new ResourceLocation("biomeswevegone", "frosted_coniferous_forest"))
+                    .addOptional(new ResourceLocation("natures_spirit", "snowy_redwood_forest"));
+            getOrCreateTagBuilder(ModBiomeTags.NO_UNDERGROUND_ZONE)
+                    .addOptional(new ResourceLocation("natures_spirit", "snowcapped_red_peaks"));
+
             getOrCreateTagBuilder(ModBiomeTags.REPLACEABLE_CAVES)
                     .add(
                             net.minecraft.world.level.biome.Biomes.LUSH_CAVES,
-                            net.minecraft.world.level.biome.Biomes.DRIPSTONE_CAVES);
+                            net.minecraft.world.level.biome.Biomes.DRIPSTONE_CAVES)
+                    .addTag(ModBiomeTags.TERRALITH_CAVES)
+                    .addTag(ModBiomeTags.YUNGS_CAVES);
+            FabricTagBuilder terralith = getOrCreateTagBuilder(ModBiomeTags.TERRALITH_CAVES);
+            for (String cave : new String[] {
+                "andesite_caves", "deep_caves", "diorite_caves", "frostfire_caves", "fungal_caves",
+                "granite_caves", "infested_caves", "mantle_caves", "thermal_caves", "tuff_caves"
+            }) {
+                terralith.addOptional(new ResourceLocation("terralith", "cave/" + cave));
+            }
+            getOrCreateTagBuilder(ModBiomeTags.YUNGS_CAVES)
+                    .addOptional(new ResourceLocation("yungscavebiomes", "lost_caves"))
+                    .addOptional(new ResourceLocation("yungscavebiomes", "frosted_caves"));
             getOrCreateTagBuilder(ModBiomeTags.INHERITS_NEIGHBOURS)
                     .forceAddTag(BiomeTags.IS_RIVER)
                     .forceAddTag(BiomeTags.IS_BEACH);
@@ -166,8 +196,6 @@ public final class TagProviders {
             getOrCreateTagBuilder(c(Registries.BIOME, "climate_dry")).add(Zone.DESERT.biome);
             getOrCreateTagBuilder(c(Registries.BIOME, "climate_wet")).add(Zone.JUNGLE.biome);
             getOrCreateTagBuilder(c(Registries.BIOME, "climate_cold")).add(Zone.ICE.biome);
-            // Stoneholm spawns under jungles and mountains
-            // keep it there below our biomes
             getOrCreateTagBuilder(TagKey.create(
                             Registries.BIOME, new ResourceLocation("stoneholm", "has_structure/underground_village")))
                     .add(Zone.JUNGLE.biome, Zone.ICE.biome);

@@ -3,13 +3,13 @@ package com.rivesuvacrispa.rivesundergroundbiomes.world;
 import com.mojang.datafixers.util.Pair;
 import com.rivesuvacrispa.rivesundergroundbiomes.RivesUndergroundBiomes;
 import com.rivesuvacrispa.rivesundergroundbiomes.mixin.HolderReferenceAccessor;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.Climate;
-import net.minecraft.world.level.biome.MultiNoiseBiomeSource;
 
 import java.util.Optional;
 import java.util.Set;
@@ -23,6 +23,7 @@ public final class BiomeSwap {
     private static final int[][] NEIGHBOURS = {
         {NEIGHBOUR_CELLS, 0}, {-NEIGHBOUR_CELLS, 0}, {0, NEIGHBOUR_CELLS}, {0, -NEIGHBOUR_CELLS}
     };
+    private static final boolean TERRABLENDER = FabricLoader.getInstance().isModLoaded("terrablender");
     private static final Set<ResourceKey<Biome>> OVERWORLD_MARKERS =
             Set.of(Biomes.DESERT, Biomes.JUNGLE, Biomes.SNOWY_PLAINS);
 
@@ -67,37 +68,53 @@ public final class BiomeSwap {
     }
 
     // x y z are quart coordinates as passed to getNoiseBiome
+    // natural is the biome the source picked
+    // by vanilla or by a mod that replaced the lookup
     public static Holder<Biome> swap(
-            MultiNoiseBiomeSource source,
+            Climate.ParameterList<Holder<Biome>> parameters,
             Holder<Biome>[] ours,
             Holder<Biome> natural,
-            Climate.TargetPoint target,
             int x,
             int y,
             int z,
             Climate.Sampler sampler) {
-        if (target.depth() < START_DEPTH) return natural;
         Zone zone = Zone.ofSurface(natural);
+        boolean inherits = false;
         if (zone == null) {
-            boolean inherits = natural.is(ModBiomeTags.INHERITS_NEIGHBOURS);
+            inherits = natural.is(ModBiomeTags.INHERITS_NEIGHBOURS);
             if (!inherits && !natural.is(ModBiomeTags.REPLACEABLE_CAVES)) return natural;
-            Holder<Biome> surface = inherits ? natural : source.getNoiseBiome(atSurface(target));
+        }
+        // sampled only for candidates since a mod like TerraBlender may have replaced the lookup
+        // that held the vanilla target point
+        Climate.TargetPoint target = sampler.sample(x, y, z);
+        if (target.depth() < START_DEPTH) return natural;
+        if (zone == null) {
+            Holder<Biome> surface = inherits ? natural : lookup(parameters, atSurface(target), x, y, z);
             zone = Zone.ofSurface(surface);
             if (zone == null && surface.is(ModBiomeTags.INHERITS_NEIGHBOURS))
-                zone = neighbourZone(source, x, y, z, sampler);
+                zone = neighbourZone(parameters, x, y, z, sampler);
             if (zone == null) return natural;
         }
         return ours[zone.ordinal()];
     }
 
-    private static Zone neighbourZone(MultiNoiseBiomeSource source, int x, int y, int z, Climate.Sampler sampler) {
+    private static Zone neighbourZone(
+            Climate.ParameterList<Holder<Biome>> parameters, int x, int y, int z, Climate.Sampler sampler) {
         int[] votes = new int[Zone.VALUES.length];
         for (int[] offset : NEIGHBOURS) {
-            Zone zone =
-                    Zone.ofSurface(source.getNoiseBiome(atSurface(sampler.sample(x + offset[0], y, z + offset[1]))));
+            int nx = x + offset[0];
+            int nz = z + offset[1];
+            Zone zone = Zone.ofSurface(lookup(parameters, atSurface(sampler.sample(nx, y, nz)), nx, y, nz));
             if (zone != null && ++votes[zone.ordinal()] >= 2) return zone;
         }
         return null;
+    }
+
+    // TerraBlender picks the biome per region
+    // so a plain param search miss its surface biomes
+    private static Holder<Biome> lookup(
+            Climate.ParameterList<Holder<Biome>> parameters, Climate.TargetPoint target, int x, int y, int z) {
+        return TERRABLENDER ? TerraBlenderBiomes.findValue(parameters, target, x, y, z) : parameters.findValue(target);
     }
 
     private static Climate.TargetPoint atSurface(Climate.TargetPoint target) {
