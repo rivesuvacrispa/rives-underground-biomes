@@ -63,7 +63,8 @@ public class BiomeProvider extends FabricDynamicRegistryProvider {
                 false,
                 2.0F,
                 0.0F,
-                4159204,
+                0x9CA88A,
+                0x2B2818,
                 spawns,
                 generation,
                 SoundEvents.MUSIC_BIOME_DESERT,
@@ -83,7 +84,8 @@ public class BiomeProvider extends FabricDynamicRegistryProvider {
                 true,
                 0.95F,
                 0.9F,
-                4159204,
+                0x3E9C7C,
+                0x0B2A1A,
                 spawns,
                 generation,
                 SoundEvents.MUSIC_BIOME_LUSH_CAVES,
@@ -101,7 +103,8 @@ public class BiomeProvider extends FabricDynamicRegistryProvider {
                 true,
                 -0.5F,
                 0.5F,
-                3750089,
+                0x8FC8F0,
+                0x1E4A6E,
                 spawns,
                 generation,
                 SoundEvents.MUSIC_BIOME_FROZEN_PEAKS,
@@ -141,6 +144,7 @@ public class BiomeProvider extends FabricDynamicRegistryProvider {
             float temperature,
             float downfall,
             int waterColor,
+            int waterFogColor,
             MobSpawnSettings.Builder spawns,
             BiomeGenerationSettings.Builder generation,
             Holder<SoundEvent> music,
@@ -152,7 +156,7 @@ public class BiomeProvider extends FabricDynamicRegistryProvider {
                 .downfall(downfall)
                 .specialEffects(new BiomeSpecialEffects.Builder()
                         .waterColor(waterColor)
-                        .waterFogColor(329011)
+                        .waterFogColor(waterFogColor)
                         .fogColor(12638463)
                         .skyColor(skyColor(temperature))
                         .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
