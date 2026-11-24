@@ -1,11 +1,13 @@
 package com.rivesuvacrispa.rivesundergroundbiomes.datagen;
 
 import com.rivesuvacrispa.rivesundergroundbiomes.ModBlocks;
+import com.rivesuvacrispa.rivesundergroundbiomes.ModEntities;
 import com.rivesuvacrispa.rivesundergroundbiomes.ModFeatures;
 import com.rivesuvacrispa.rivesundergroundbiomes.RivesUndergroundBiomes;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.ModBlockTags;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.Zone;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.AttachedBlockFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.DungeonFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.NoiseNetFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.SpeleothemFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.UnderwaterGardenFeature;
@@ -23,6 +25,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
@@ -75,6 +78,7 @@ public final class ModWorldgen {
     static final String ICICLES = "icicles";
     static final String FROST_CRYSTALS = "frost_crystals";
     static final String SNOW_PATCH = "snow_patch";
+    static final String ICE_DUNGEON = "ice_dungeon";
     // Underground Jungle
     static final String GIANT_HIVE = "giant_hive";
     static final String SPIDER_NEST = "spider_nest";
@@ -95,6 +99,8 @@ public final class ModWorldgen {
     static final String MOSS_CEILING = "moss_ceiling";
     static final String VINE_CURTAINS = "vine_curtains";
     static final String JUNGLE_WATER_GARDEN = "jungle_water_garden";
+    static final String JUNGLE_DUNGEON = "jungle_dungeon";
+    static final String JUNGLE_SHAFT = "jungle_shaft";
     // Underground Desert
     static final String FOSSIL_COAL = "desert_fossil_coal";
     static final String FOSSIL_DIAMONDS = "desert_fossil_diamonds";
@@ -103,7 +109,9 @@ public final class ModWorldgen {
     static final String SANDSTONE_SPELEOTHEMS = "sandstone_speleothems";
     static final String SAND_PATCH = "sand_patch";
     static final String BURIED_RELIC = "buried_relic";
+    static final String DESERT_DUNGEON = "desert_dungeon";
 
+    private static final int DUNGEON_ATTEMPTS = 6;
     private static final PlacementModifier RANGE =
             HeightRangePlacement.uniform(VerticalAnchor.aboveBottom(6), VerticalAnchor.absolute(80));
     // no trees or plants on stalagmites
@@ -167,6 +175,19 @@ public final class ModWorldgen {
                         0.4F,
                         UniformInt.of(2, 4),
                         0.3F));
+        FeatureUtils.register(
+                context,
+                configuredKey(ICE_DUNGEON),
+                ModFeatures.DUNGEON,
+                new DungeonFeature.Config(
+                        weighted(SimpleWeightedRandomList.<BlockState>builder()
+                                .add(ModBlocks.PERMAFROST_BRICKS.defaultBlockState(), 4)
+                                .add(Blocks.PACKED_ICE.defaultBlockState(), 1)),
+                        weighted(SimpleWeightedRandomList.<BlockState>builder()
+                                .add(ModBlocks.PERMAFROST_BRICKS.defaultBlockState(), 2)
+                                .add(ModBlocks.PERMAFROST.defaultBlockState(), 1)
+                                .add(Blocks.PACKED_ICE.defaultBlockState(), 1)),
+                        List.of(ModEntities.FROZEN, EntityType.STRAY)));
 
         FeatureUtils.register(context, configuredKey(GIANT_HIVE), ModFeatures.GIANT_HIVE);
         FeatureUtils.register(context, configuredKey(SPIDER_NEST), ModFeatures.SPIDER_NEST);
@@ -289,6 +310,20 @@ public final class ModWorldgen {
                 configuredKey(JUNGLE_WATER_GARDEN),
                 ModFeatures.UNDERWATER_GARDEN,
                 new UnderwaterGardenFeature.Config(24, 6, 0.45F, 0.2F, 0.3F, 0.05F));
+        FeatureUtils.register(
+                context,
+                configuredKey(JUNGLE_DUNGEON),
+                ModFeatures.DUNGEON,
+                new DungeonFeature.Config(
+                        weighted(SimpleWeightedRandomList.<BlockState>builder()
+                                .add(Blocks.MUD_BRICKS.defaultBlockState(), 5)
+                                .add(Blocks.PACKED_MUD.defaultBlockState(), 1)),
+                        weighted(SimpleWeightedRandomList.<BlockState>builder()
+                                .add(Blocks.MUD_BRICKS.defaultBlockState(), 2)
+                                .add(Blocks.PACKED_MUD.defaultBlockState(), 1)
+                                .add(Blocks.MOSS_BLOCK.defaultBlockState(), 1)),
+                        List.of(ModEntities.JUNGLE_SLIME)));
+        FeatureUtils.register(context, configuredKey(JUNGLE_SHAFT), ModFeatures.JUNGLE_SHAFT);
 
         FeatureUtils.register(context, configuredKey(RIB_CAGE), ModFeatures.RIB_CAGE);
         FeatureUtils.register(
@@ -318,6 +353,20 @@ public final class ModWorldgen {
                         UniformInt.of(2, 5),
                         0.3F));
         FeatureUtils.register(context, configuredKey(BURIED_RELIC), ModFeatures.BURIED_RELIC);
+        FeatureUtils.register(
+                context,
+                configuredKey(DESERT_DUNGEON),
+                ModFeatures.DUNGEON,
+                new DungeonFeature.Config(
+                        weighted(SimpleWeightedRandomList.<BlockState>builder()
+                                .add(Blocks.CUT_SANDSTONE.defaultBlockState(), 4)
+                                .add(Blocks.SANDSTONE.defaultBlockState(), 3)
+                                .add(Blocks.SMOOTH_SANDSTONE.defaultBlockState(), 2)
+                                .add(Blocks.CHISELED_SANDSTONE.defaultBlockState(), 1)),
+                        weighted(SimpleWeightedRandomList.<BlockState>builder()
+                                .add(Blocks.SMOOTH_SANDSTONE.defaultBlockState(), 3)
+                                .add(Blocks.CUT_SANDSTONE.defaultBlockState(), 1)),
+                        List.of(EntityType.HUSK, ModEntities.MUMMY_SKELETON)));
     }
 
     public static void placed(BootstapContext<PlacedFeature> context) {
@@ -339,6 +388,7 @@ public final class ModWorldgen {
         place(context, configured, ICICLES, scattered(24));
         place(context, configured, FROST_CRYSTALS, scattered(6));
         place(context, configured, SNOW_PATCH, floor(40));
+        place(context, configured, ICE_DUNGEON, scattered(DUNGEON_ATTEMPTS));
 
         place(
                 context,
@@ -372,6 +422,8 @@ public final class ModWorldgen {
                 context, placedKey(MOSS_CEILING), configured.getOrThrow(CaveFeatures.MOSS_PATCH_CEILING), ceiling(25));
         place(context, configured, VINE_CURTAINS, scattered(40));
         place(context, configured, JUNGLE_WATER_GARDEN, waterFloor(80));
+        place(context, configured, JUNGLE_DUNGEON, scattered(DUNGEON_ATTEMPTS));
+        place(context, configured, JUNGLE_SHAFT, List.of(RarityFilter.onAverageOnceEvery(16)));
 
         PlacementUtils.register(
                 context,
@@ -399,18 +451,24 @@ public final class ModWorldgen {
         place(context, configured, SANDSTONE_SPELEOTHEMS, scattered(20));
         place(context, configured, SAND_PATCH, floor(30));
         place(context, configured, BURIED_RELIC, floor(8));
+        place(context, configured, DESERT_DUNGEON, scattered(DUNGEON_ATTEMPTS));
     }
 
     public static void addIceCaves(BiomeGenerationSettings.Builder generation) {
         add(generation, GenerationStep.Decoration.LOCAL_MODIFICATIONS, ICE_NET);
-        add(generation, GenerationStep.Decoration.UNDERGROUND_STRUCTURES, ICE_FOSSIL_COAL, ICE_FOSSIL_DIAMONDS);
+        add(
+                generation,
+                GenerationStep.Decoration.UNDERGROUND_STRUCTURES,
+                ICE_FOSSIL_COAL,
+                ICE_FOSSIL_DIAMONDS,
+                ICE_DUNGEON);
         add(generation, GenerationStep.Decoration.UNDERGROUND_ORES, PACKED_ICE_POCKET, BLUE_ICE_POCKET);
         add(generation, GenerationStep.Decoration.UNDERGROUND_DECORATION, ICICLES, FROST_CRYSTALS, SNOW_PATCH);
     }
 
     public static void addUndergroundJungle(BiomeGenerationSettings.Builder generation) {
-        add(generation, GenerationStep.Decoration.LOCAL_MODIFICATIONS, ROOT_NET);
-        add(generation, GenerationStep.Decoration.UNDERGROUND_STRUCTURES, GIANT_HIVE, SPIDER_NEST);
+        add(generation, GenerationStep.Decoration.LOCAL_MODIFICATIONS, ROOT_NET, JUNGLE_SHAFT);
+        add(generation, GenerationStep.Decoration.UNDERGROUND_STRUCTURES, GIANT_HIVE, SPIDER_NEST, JUNGLE_DUNGEON);
         add(generation, GenerationStep.Decoration.UNDERGROUND_DECORATION, MUD_SPELEOTHEMS, MOSS_COAT);
         add(
                 generation,
@@ -432,7 +490,13 @@ public final class ModWorldgen {
     }
 
     public static void addUndergroundDesert(BiomeGenerationSettings.Builder generation) {
-        add(generation, GenerationStep.Decoration.UNDERGROUND_STRUCTURES, FOSSIL_COAL, FOSSIL_DIAMONDS, RIB_CAGE);
+        add(
+                generation,
+                GenerationStep.Decoration.UNDERGROUND_STRUCTURES,
+                FOSSIL_COAL,
+                FOSSIL_DIAMONDS,
+                RIB_CAGE,
+                DESERT_DUNGEON);
         add(generation, GenerationStep.Decoration.UNDERGROUND_ORES, SAND_POCKET);
         add(
                 generation,

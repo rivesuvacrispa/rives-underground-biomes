@@ -3,7 +3,9 @@ package com.rivesuvacrispa.rivesundergroundbiomes;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.AttachedBlockFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.BeeNestFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.BuriedRelicFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.DungeonFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.GiantHiveFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.JungleShaftFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.MossCoatFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.NoiseNetFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.RibCageFeature;
@@ -31,6 +33,8 @@ public final class ModFeatures {
     public static final VineCurtainFeature VINE_CURTAIN = register("vine_curtain", new VineCurtainFeature());
     public static final UnderwaterGardenFeature UNDERWATER_GARDEN =
             register("underwater_garden", new UnderwaterGardenFeature());
+    public static final DungeonFeature DUNGEON = register("dungeon", new DungeonFeature());
+    public static final JungleShaftFeature JUNGLE_SHAFT = register("jungle_shaft", new JungleShaftFeature());
 
     private static <C extends FeatureConfiguration, F extends Feature<C>> F register(String name, F feature) {
         return Registry.register(BuiltInRegistries.FEATURE, RivesUndergroundBiomes.id(name), feature);

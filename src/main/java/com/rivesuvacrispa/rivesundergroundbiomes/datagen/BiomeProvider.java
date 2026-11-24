@@ -133,7 +133,8 @@ public class BiomeProvider extends FabricDynamicRegistryProvider {
     private static void globalOverworldGeneration(BiomeGenerationSettings.Builder generation) {
         BiomeDefaultFeatures.addDefaultCarversAndLakes(generation);
         BiomeDefaultFeatures.addDefaultCrystalFormations(generation);
-        BiomeDefaultFeatures.addDefaultMonsterRoom(generation);
+        // custom dungeons replace vanilla's
+        // BiomeDefaultFeatures.addDefaultMonsterRoom(generation);
         BiomeDefaultFeatures.addDefaultUndergroundVariety(generation);
         BiomeDefaultFeatures.addDefaultSprings(generation);
         BiomeDefaultFeatures.addSurfaceFreezing(generation);
