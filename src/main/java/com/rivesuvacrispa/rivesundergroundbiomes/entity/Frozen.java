@@ -1,6 +1,5 @@
 package com.rivesuvacrispa.rivesundergroundbiomes.entity;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,10 +29,5 @@ public class Frozen extends Zombie {
     protected void doUnderWaterConversion() {
         convertToZombieType(EntityType.ZOMBIE);
         if (!isSilent()) level().levelEvent(null, 1041, blockPosition(), 0);
-    }
-
-    @Override
-    protected ResourceLocation getDefaultLootTable() {
-        return EntityType.ZOMBIE.getDefaultLootTable();
     }
 }

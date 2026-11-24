@@ -1,9 +1,9 @@
 package com.rivesuvacrispa.rivesundergroundbiomes.world.feature;
 
+import com.rivesuvacrispa.rivesundergroundbiomes.ModEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -50,9 +50,9 @@ public class SpiderNestFeature extends Feature<NoneFeatureConfiguration> {
                     if (!level.getBlockState(pos).is(Blocks.CAVE_AIR)) continue;
                     boolean floor = !level.isEmptyBlock(pos.below());
                     if (floor && random.nextFloat() < 0.05F) {
-                        Carving.set(level, pos, Blocks.BONE_BLOCK.defaultBlockState());
-                    } else if (random.nextFloat() < (touchesWall(level, pos) ? 0.5F : 0.15F)) {
                         Carving.set(level, pos, Blocks.COBWEB.defaultBlockState());
+                    } else if (random.nextFloat() < (touchesWall(level, pos) ? 0.5F : 0.15F)) {
+                        Carving.set(level, pos, Blocks.JUNGLE_LEAVES.defaultBlockState());
                     }
                 }
             }
@@ -67,7 +67,7 @@ public class SpiderNestFeature extends Feature<NoneFeatureConfiguration> {
         if (!Carving.canOverwrite(level.getBlockState(floor))) return true;
         Carving.set(level, floor, Blocks.SPAWNER.defaultBlockState());
         if (level.getBlockEntity(floor) instanceof SpawnerBlockEntity spawner) {
-            spawner.setEntityId(random.nextFloat() < 0.6F ? EntityType.CAVE_SPIDER : EntityType.SPIDER, random);
+            spawner.setEntityId(ModEntities.JUNGLE_SPIDER, random);
         }
         Direction side = Direction.Plane.HORIZONTAL.getRandomDirection(random);
         BlockPos chest = floor.relative(side);
