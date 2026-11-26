@@ -25,8 +25,11 @@ public final class StoneConverter {
 
     public static void convert(WorldGenLevel level, ChunkAccess chunk) {
         LevelChunkSection[] sections = chunk.getSections();
-        if (!hasZone(sections)) return;
+        if (hasZone(sections)) convertZones(level, chunk, sections);
+        revealFeatureWater(sections);
+    }
 
+    private static void convertZones(WorldGenLevel level, ChunkAccess chunk, LevelChunkSection[] sections) {
         ChunkPos pos = chunk.getPos();
         int minX = pos.getMinBlockX();
         int minZ = pos.getMinBlockZ();
@@ -75,6 +78,26 @@ public final class StoneConverter {
         }
     }
 
+    private static void revealFeatureWater(LevelChunkSection[] sections) {
+        BlockState water = Blocks.WATER.defaultBlockState();
+        for (LevelChunkSection section : sections) {
+            if (section.hasOnlyAir() || !section.maybeHas(state -> state == Conversions.WATER_MARKER)) continue;
+            section.acquire();
+            try {
+                for (int y = 0; y < 16; y++) {
+                    for (int z = 0; z < 16; z++) {
+                        for (int x = 0; x < 16; x++) {
+                            if (section.getBlockState(x, y, z) == Conversions.WATER_MARKER)
+                                section.setBlockState(x, y, z, water, false);
+                        }
+                    }
+                }
+            } finally {
+                section.release();
+            }
+        }
+    }
+
     // jitters zone borders so they are not boring cubes
     private static byte cellAt(
             WorldGenLevel level, byte[] cells, int qx0, int qy0, int qz0, int sizeXZ, int bx, int by, int bz) {
@@ -113,7 +136,7 @@ public final class StoneConverter {
 
     private static byte cellOf(Holder<Biome> biome) {
         for (Zone zone : Zone.VALUES) {
-            if (biome.is(zone.biome)) return (byte) (2 + zone.ordinal() * 2 + 1);
+            if (zone.isBiome(biome)) return (byte) (2 + zone.ordinal() * 2 + 1);
         }
         Zone surface = Zone.ofSurface(biome);
         return surface == null ? NONE : (byte) (2 + surface.ordinal() * 2);

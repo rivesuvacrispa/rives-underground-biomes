@@ -12,7 +12,8 @@ public enum Host {
     MUD(Zone.JUNGLE, false, "mud", SoundType.MUD),
     MUDSTONE(Zone.JUNGLE, true, "mudstone", SoundType.MUD_BRICKS),
     PERMAFROST(Zone.ICE, false, "permafrost", SoundType.STONE),
-    GLACISLATE(Zone.ICE, true, "glacislate", SoundType.DEEPSLATE);
+    GLACISLATE(Zone.ICE, true, "glacislate", SoundType.DEEPSLATE),
+    PEARLSTONE(Zone.REEF, true, "pearlstone", SoundType.DEEPSLATE);
 
     public static final Host[] VALUES = values();
 
@@ -36,17 +37,11 @@ public enum Host {
             case MUDSTONE -> ModBlocks.MUDSTONE;
             case PERMAFROST -> ModBlocks.PERMAFROST;
             case GLACISLATE -> ModBlocks.GLACISLATE;
+            case PEARLSTONE -> ModBlocks.PEARLSTONE;
         };
     }
 
     public float hardness() {
         return block().defaultDestroyTime();
-    }
-
-    public static Host of(Zone zone, boolean deep) {
-        for (Host host : VALUES) {
-            if (host.zone == zone && host.deep == deep) return host;
-        }
-        throw new IllegalArgumentException(zone + " deep=" + deep);
     }
 }

@@ -6,6 +6,7 @@ import com.rivesuvacrispa.rivesundergroundbiomes.block.Host;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.ModBlockTags;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.OreKind;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.ModBiomeTags;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.ModStructureTags;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.Zone;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
@@ -21,6 +22,8 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
+import net.minecraft.world.level.levelgen.structure.Structure;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -66,11 +69,85 @@ public final class TagProviders {
             shovel.add(ModBlocks.POINTED_MUD, ModBlocks.QUICKSAND);
             pickaxe.add(ModBlocks.THIN_ICE);
             ModBlocks.permafrostBricks().forEach(pickaxe::add);
+            ModBlocks.pearlstoneBricks().forEach(pickaxe::add);
+            pickaxe.add(ModBlocks.DESERT_CHEST, ModBlocks.FROST_CHEST, ModBlocks.PRISMARINE_CHEST);
+            getOrCreateTagBuilder(BlockTags.MINEABLE_WITH_AXE).add(ModBlocks.JUNGLE_CHEST, ModBlocks.SPIDER_CHEST);
+            ModBlocks.chests().forEach(chest -> {
+                getOrCreateTagBuilder(BlockTags.FEATURES_CANNOT_REPLACE).add(chest);
+                getOrCreateTagBuilder(BlockTags.GUARDED_BY_PIGLINS).add(chest);
+            });
             getOrCreateTagBuilder(BlockTags.STONE_BRICKS).add(ModBlocks.PERMAFROST_BRICKS);
             getOrCreateTagBuilder(BlockTags.STAIRS).add(ModBlocks.PERMAFROST_BRICK_STAIRS);
             getOrCreateTagBuilder(BlockTags.SLABS).add(ModBlocks.PERMAFROST_BRICK_SLAB);
             getOrCreateTagBuilder(BlockTags.WALLS).add(ModBlocks.PERMAFROST_BRICK_WALL);
+            getOrCreateTagBuilder(BlockTags.STONE_BRICKS)
+                    .add(ModBlocks.PEARLSTONE_BRICKS, ModBlocks.CHISELED_PEARLSTONE);
+            getOrCreateTagBuilder(BlockTags.STAIRS).add(ModBlocks.PEARLSTONE_BRICK_STAIRS);
+            getOrCreateTagBuilder(BlockTags.SLABS).add(ModBlocks.PEARLSTONE_BRICK_SLAB);
+            getOrCreateTagBuilder(BlockTags.WALLS).add(ModBlocks.PEARLSTONE_BRICK_WALL);
+            getOrCreateTagBuilder(BlockTags.STAIRS).add(ModBlocks.SMOOTH_PEARLSTONE_STAIRS);
+            getOrCreateTagBuilder(BlockTags.SLABS).add(ModBlocks.SMOOTH_PEARLSTONE_SLAB);
+            getOrCreateTagBuilder(BlockTags.WALLS).add(ModBlocks.SMOOTH_PEARLSTONE_WALL);
+            FabricTagBuilder bare =
+                    getOrCreateTagBuilder(ModBlockTags.REEF_BARE).forceAddTag(BlockTags.BASE_STONE_OVERWORLD);
+            for (OreKind kind : OreKind.VALUES) bare.forceAddTag(kind.blockTag);
+            FabricTagBuilder structure = getOrCreateTagBuilder(ModBlockTags.REEF_STRUCTURE)
+                    .add(ModBlocks.PRISMARINE_CHEST)
+                    .add(
+                            net.minecraft.world.level.block.Blocks.COPPER_BLOCK,
+                            net.minecraft.world.level.block.Blocks.CUT_COPPER,
+                            net.minecraft.world.level.block.Blocks.CUT_COPPER_STAIRS,
+                            net.minecraft.world.level.block.Blocks.CUT_COPPER_SLAB,
+                            net.minecraft.world.level.block.Blocks.WAXED_COPPER_BLOCK,
+                            net.minecraft.world.level.block.Blocks.WAXED_CUT_COPPER,
+                            net.minecraft.world.level.block.Blocks.WAXED_CUT_COPPER_STAIRS,
+                            net.minecraft.world.level.block.Blocks.WAXED_CUT_COPPER_SLAB,
+                            net.minecraft.world.level.block.Blocks.EXPOSED_COPPER,
+                            net.minecraft.world.level.block.Blocks.EXPOSED_CUT_COPPER,
+                            net.minecraft.world.level.block.Blocks.EXPOSED_CUT_COPPER_STAIRS,
+                            net.minecraft.world.level.block.Blocks.EXPOSED_CUT_COPPER_SLAB,
+                            net.minecraft.world.level.block.Blocks.WAXED_EXPOSED_COPPER,
+                            net.minecraft.world.level.block.Blocks.WAXED_EXPOSED_CUT_COPPER,
+                            net.minecraft.world.level.block.Blocks.WAXED_EXPOSED_CUT_COPPER_STAIRS,
+                            net.minecraft.world.level.block.Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB,
+                            net.minecraft.world.level.block.Blocks.WEATHERED_COPPER,
+                            net.minecraft.world.level.block.Blocks.WEATHERED_CUT_COPPER,
+                            net.minecraft.world.level.block.Blocks.WEATHERED_CUT_COPPER_STAIRS,
+                            net.minecraft.world.level.block.Blocks.WEATHERED_CUT_COPPER_SLAB,
+                            net.minecraft.world.level.block.Blocks.WAXED_WEATHERED_COPPER,
+                            net.minecraft.world.level.block.Blocks.WAXED_WEATHERED_CUT_COPPER,
+                            net.minecraft.world.level.block.Blocks.WAXED_WEATHERED_CUT_COPPER_STAIRS,
+                            net.minecraft.world.level.block.Blocks.WAXED_WEATHERED_CUT_COPPER_SLAB,
+                            net.minecraft.world.level.block.Blocks.OXIDIZED_COPPER,
+                            net.minecraft.world.level.block.Blocks.OXIDIZED_CUT_COPPER,
+                            net.minecraft.world.level.block.Blocks.OXIDIZED_CUT_COPPER_STAIRS,
+                            net.minecraft.world.level.block.Blocks.OXIDIZED_CUT_COPPER_SLAB,
+                            net.minecraft.world.level.block.Blocks.WAXED_OXIDIZED_COPPER,
+                            net.minecraft.world.level.block.Blocks.WAXED_OXIDIZED_CUT_COPPER,
+                            net.minecraft.world.level.block.Blocks.WAXED_OXIDIZED_CUT_COPPER_STAIRS,
+                            net.minecraft.world.level.block.Blocks.WAXED_OXIDIZED_CUT_COPPER_SLAB,
+                            net.minecraft.world.level.block.Blocks.DARK_PRISMARINE,
+                            net.minecraft.world.level.block.Blocks.PRISMARINE_BRICKS,
+                            net.minecraft.world.level.block.Blocks.PRISMARINE_BRICK_STAIRS,
+                            net.minecraft.world.level.block.Blocks.PRISMARINE_BRICK_SLAB,
+                            net.minecraft.world.level.block.Blocks.GLASS,
+                            net.minecraft.world.level.block.Blocks.SPAWNER,
+                            net.minecraft.world.level.block.Blocks.BARREL,
+                            net.minecraft.world.level.block.Blocks.BLAST_FURNACE,
+                            net.minecraft.world.level.block.Blocks.REDSTONE_LAMP,
+                            net.minecraft.world.level.block.Blocks.LIGHTNING_ROD,
+                            net.minecraft.world.level.block.Blocks.LADDER,
+                            net.minecraft.world.level.block.Blocks.SPRUCE_STAIRS,
+                            net.minecraft.world.level.block.Blocks.DECORATED_POT,
+                            net.minecraft.world.level.block.Blocks.GOLD_BLOCK,
+                            net.minecraft.world.level.block.Blocks.RAW_GOLD_BLOCK,
+                            net.minecraft.world.level.block.Blocks.EMERALD_BLOCK,
+                            net.minecraft.world.level.block.Blocks.LAPIS_BLOCK,
+                            net.minecraft.world.level.block.Blocks.WET_SPONGE);
+            ModBlocks.pearlstoneBricks().forEach(structure::add);
             getOrCreateTagBuilder(BlockTags.ICE).add(ModBlocks.THIN_ICE);
+            shovel.add(ModBlocks.PEARL_SAND);
+            getOrCreateTagBuilder(BlockTags.SAND).add(ModBlocks.PEARL_SAND);
             getOrCreateTagBuilder(ModBlockTags.ROOT_PIERCEABLE)
                     .forceAddTag(BlockTags.BASE_STONE_OVERWORLD)
                     .forceAddTag(BlockTags.DIRT)
@@ -163,6 +240,7 @@ public final class TagProviders {
                     .addOptional(new ResourceLocation("biomeswevegone", "frosted_taiga"))
                     .addOptional(new ResourceLocation("biomeswevegone", "frosted_coniferous_forest"))
                     .addOptional(new ResourceLocation("natures_spirit", "snowy_redwood_forest"));
+            getOrCreateTagBuilder(Zone.REEF.surfaceTag).add(net.minecraft.world.level.biome.Biomes.WARM_OCEAN);
             getOrCreateTagBuilder(ModBiomeTags.NO_UNDERGROUND_ZONE)
                     .addOptional(new ResourceLocation("natures_spirit", "snowcapped_red_peaks"));
 
@@ -188,9 +266,13 @@ public final class TagProviders {
 
             for (Zone zone : Zone.VALUES) {
                 getOrCreateTagBuilder(BiomeTags.IS_OVERWORLD).add(zone.biome);
-                getOrCreateTagBuilder(BiomeTags.HAS_MINESHAFT).add(zone.biome);
                 getOrCreateTagBuilder(c(Registries.BIOME, "caves")).add(zone.biome);
+                if (zone != Zone.REEF)
+                    getOrCreateTagBuilder(BiomeTags.HAS_MINESHAFT).add(zone.biome);
             }
+            getOrCreateTagBuilder(BiomeTags.IS_OVERWORLD).add(Zone.REEF.deepBiome);
+            getOrCreateTagBuilder(c(Registries.BIOME, "caves")).add(Zone.REEF.deepBiome);
+            getOrCreateTagBuilder(BiomeTags.PLAYS_UNDERWATER_MUSIC).add(Zone.REEF.biome, Zone.REEF.deepBiome);
             getOrCreateTagBuilder(BiomeTags.SNOW_GOLEM_MELTS).add(Zone.DESERT.biome);
             getOrCreateTagBuilder(c(Registries.BIOME, "climate_hot")).add(Zone.DESERT.biome, Zone.JUNGLE.biome);
             getOrCreateTagBuilder(c(Registries.BIOME, "climate_dry")).add(Zone.DESERT.biome);
@@ -199,6 +281,20 @@ public final class TagProviders {
             getOrCreateTagBuilder(TagKey.create(
                             Registries.BIOME, new ResourceLocation("stoneholm", "has_structure/underground_village")))
                     .add(Zone.JUNGLE.biome, Zone.ICE.biome);
+        }
+    }
+
+    public static class Structures extends FabricTagProvider<Structure> {
+        public Structures(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+            super(output, Registries.STRUCTURE, registries);
+        }
+
+        @Override
+        protected void addTags(HolderLookup.Provider registries) {
+            getOrCreateTagBuilder(ModStructureTags.REEF_AVOIDS)
+                    .add(BuiltinStructures.STRONGHOLD, BuiltinStructures.ANCIENT_CITY);
+            getOrCreateTagBuilder(ModStructureTags.NOT_IN_REEF)
+                    .add(BuiltinStructures.MINESHAFT, BuiltinStructures.MINESHAFT_MESA);
         }
     }
 

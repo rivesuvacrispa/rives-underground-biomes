@@ -13,6 +13,10 @@ public final class ModBlockTags {
 
     public static final TagKey<Block> SPELEOTHEMS =
             TagKey.create(Registries.BLOCK, RivesUndergroundBiomes.id("speleothems"));
+    public static final TagKey<Block> REEF_BARE =
+            TagKey.create(Registries.BLOCK, RivesUndergroundBiomes.id("reef_bare"));
+    public static final TagKey<Block> REEF_STRUCTURE =
+            TagKey.create(Registries.BLOCK, RivesUndergroundBiomes.id("reef_structure"));
 
     private ModBlockTags() {}
 }

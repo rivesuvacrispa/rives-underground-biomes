@@ -23,6 +23,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -49,6 +50,8 @@ public class BiomeProvider extends FabricDynamicRegistryProvider {
         context.register(Zone.DESERT.biome, undergroundDesert(context));
         context.register(Zone.JUNGLE.biome, undergroundJungle(context));
         context.register(Zone.ICE.biome, iceCaves(context));
+        context.register(Zone.REEF.biome, reef(context, 0x2FC9E0, 0x062A3A));
+        context.register(Zone.REEF.deepBiome, reef(context, 0x2A78C8, 0x041A30));
     }
 
     private static Biome undergroundDesert(BootstapContext<Biome> context) {
@@ -111,6 +114,30 @@ public class BiomeProvider extends FabricDynamicRegistryProvider {
                 new AmbientParticleSettings(ParticleTypes.SNOWFLAKE, 0.004F));
     }
 
+    private static Biome reef(BootstapContext<Biome> context, int waterColor, int waterFogColor) {
+        MobSpawnSettings.Builder spawns = new MobSpawnSettings.Builder();
+        spawns.addSpawn(
+                MobCategory.UNDERGROUND_WATER_CREATURE,
+                new MobSpawnSettings.SpawnerData(EntityType.GLOW_SQUID, 10, 4, 6));
+        spawns.addSpawn(
+                MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
+        spawns.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.PUFFERFISH, 15, 1, 3));
+        spawns.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 5, 1, 1));
+        BiomeGenerationSettings.Builder generation = generation(context);
+        BiomeDefaultFeatures.addDefaultOres(generation);
+        ModWorldgen.addReef(generation);
+        return biome(
+                true,
+                0.5F,
+                0.5F,
+                waterColor,
+                waterFogColor,
+                spawns,
+                generation,
+                SoundEvents.MUSIC_BIOME_LUSH_CAVES,
+                null);
+    }
+
     private static MobSpawnSettings.Builder spawns(EntityType<?> zombie, EntityType<?> skeleton, EntityType<?> spider) {
         MobSpawnSettings.Builder spawns = new MobSpawnSettings.Builder();
         BiomeDefaultFeatures.caveSpawns(spawns);
@@ -149,21 +176,21 @@ public class BiomeProvider extends FabricDynamicRegistryProvider {
             MobSpawnSettings.Builder spawns,
             BiomeGenerationSettings.Builder generation,
             Holder<SoundEvent> music,
-            AmbientParticleSettings particles) {
+            @Nullable AmbientParticleSettings particles) {
         Music backgroundMusic = Musics.createGameMusic(music);
+        BiomeSpecialEffects.Builder effects = new BiomeSpecialEffects.Builder()
+                .waterColor(waterColor)
+                .waterFogColor(waterFogColor)
+                .fogColor(12638463)
+                .skyColor(skyColor(temperature))
+                .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
+                .backgroundMusic(backgroundMusic);
+        if (particles != null) effects.ambientParticle(particles);
         return new Biome.BiomeBuilder()
                 .hasPrecipitation(precipitation)
                 .temperature(temperature)
                 .downfall(downfall)
-                .specialEffects(new BiomeSpecialEffects.Builder()
-                        .waterColor(waterColor)
-                        .waterFogColor(waterFogColor)
-                        .fogColor(12638463)
-                        .skyColor(skyColor(temperature))
-                        .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
-                        .backgroundMusic(backgroundMusic)
-                        .ambientParticle(particles)
-                        .build())
+                .specialEffects(effects.build())
                 .mobSpawnSettings(spawns.build())
                 .generationSettings(generation.build())
                 .build();

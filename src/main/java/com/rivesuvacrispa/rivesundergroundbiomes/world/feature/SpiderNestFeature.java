@@ -1,5 +1,6 @@
 package com.rivesuvacrispa.rivesundergroundbiomes.world.feature;
 
+import com.rivesuvacrispa.rivesundergroundbiomes.ModBlocks;
 import com.rivesuvacrispa.rivesundergroundbiomes.ModEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -64,7 +65,13 @@ public class SpiderNestFeature extends Feature<NoneFeatureConfiguration> {
                         || level.getBlockState(floor.below()).is(Blocks.COBWEB))) {
             floor = floor.below();
         }
-        if (!Carving.canOverwrite(level.getBlockState(floor))) return true;
+        if (Carving.canOverwrite(level.getBlockState(floor))) placeSpawnerAndChest(level, floor, random);
+        int openings = 3 + random.nextInt(3);
+        for (int i = 0; i < openings; i++) carveOpening(level, center, rx, ry, rz, random);
+        return true;
+    }
+
+    private static void placeSpawnerAndChest(WorldGenLevel level, BlockPos floor, RandomSource random) {
         Carving.set(level, floor, Blocks.SPAWNER.defaultBlockState());
         if (level.getBlockEntity(floor) instanceof SpawnerBlockEntity spawner) {
             spawner.setEntityId(ModEntities.JUNGLE_SPIDER, random);
@@ -72,10 +79,49 @@ public class SpiderNestFeature extends Feature<NoneFeatureConfiguration> {
         Direction side = Direction.Plane.HORIZONTAL.getRandomDirection(random);
         BlockPos chest = floor.relative(side);
         if (Carving.canOverwrite(level.getBlockState(chest)) && !level.isEmptyBlock(chest.below())) {
-            Carving.set(level, chest, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, side));
+            Carving.set(level, chest, ModBlocks.SPIDER_CHEST.defaultBlockState().setValue(ChestBlock.FACING, side));
             RandomizableContainerBlockEntity.setLootTable(level, random, chest, BuiltInLootTables.ABANDONED_MINESHAFT);
         }
-        return true;
+    }
+
+    private static void carveOpening(
+            WorldGenLevel level, BlockPos center, double rx, double ry, double rz, RandomSource random) {
+        double angle = random.nextDouble() * Math.PI * 2;
+        double uy = -0.4 + random.nextDouble() * 1.1;
+        double horizontal = Math.sqrt(1 - uy * uy);
+        double ux = Math.cos(angle) * horizontal;
+        double uz = Math.sin(angle) * horizontal;
+        double wall = 1 / Math.sqrt(ux * ux / (rx * rx) + uy * uy / (ry * ry) + uz * uz / (rz * rz));
+        double start = wall - 2;
+        double end = wall + 3 + random.nextInt(3);
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (double t = start; t <= end; t += 0.5) {
+            double radius = 1.5 - (t - start) / (end - start);
+            double px = center.getX() + 0.5 + ux * t;
+            double py = center.getY() + 0.5 + uy * t;
+            double pz = center.getZ() + 0.5 + uz * t;
+            int reach = (int) Math.ceil(radius);
+            for (int x = (int) Math.floor(px) - reach; x <= (int) Math.floor(px) + reach; x++) {
+                for (int y = (int) Math.floor(py) - reach; y <= (int) Math.floor(py) + reach; y++) {
+                    for (int z = (int) Math.floor(pz) - reach; z <= (int) Math.floor(pz) + reach; z++) {
+                        double ox = x + 0.5 - px;
+                        double oy = y + 0.5 - py;
+                        double oz = z + 0.5 - pz;
+                        if (ox * ox + oy * oy + oz * oz > radius * radius) continue;
+                        BlockState state = level.getBlockState(pos.set(x, y, z));
+                        if (state.isAir() || state.is(Blocks.COBWEB)) continue;
+                        if (!Carving.canOverwrite(state)
+                                || !state.getFluidState().isEmpty()) continue;
+                        Carving.set(
+                                level,
+                                pos,
+                                random.nextFloat() < 0.3F
+                                        ? Blocks.COBWEB.defaultBlockState()
+                                        : Blocks.CAVE_AIR.defaultBlockState());
+                    }
+                }
+            }
+        }
     }
 
     private static BlockState shell(RandomSource random) {

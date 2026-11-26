@@ -6,18 +6,20 @@ import com.rivesuvacrispa.rivesundergroundbiomes.mixin.HolderReferenceAccessor;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.QuartPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.Climate;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 
 public final class BiomeSwap {
-    // same depth as vanilla cave biomes, about 25 blocks below the surface
-    public static final long START_DEPTH = Climate.quantizeCoord(0.2F);
-    // in 4 block cells
+    private static final long MIN_START_DEPTH =
+            Arrays.stream(Zone.VALUES).mapToLong(zone -> zone.startDepth).min().orElseThrow();
     private static final int NEIGHBOUR_CELLS = 6;
 
     private static final int[][] NEIGHBOURS = {
@@ -30,7 +32,8 @@ public final class BiomeSwap {
     @SuppressWarnings("unchecked")
     public static final Holder<Biome>[] DISABLED = new Holder[0];
 
-    // index = zone ordinal
+    // index = 2 * zone ordinal, +1 for the deep biome
+    // zones without one have their zone biome there again
     // DISABLED if the source is not overworld like
     // holders come from the registry that owns the list own holders
     // so no global registry access is needed
@@ -54,17 +57,25 @@ public final class BiomeSwap {
                     "Overworld biome source without registry-backed biomes; underground biomes disabled for it");
             return DISABLED;
         }
-        Holder<Biome>[] ours = new Holder[Zone.VALUES.length];
+        Holder<Biome>[] ours = new Holder[Zone.VALUES.length * 2];
         for (Zone zone : Zone.VALUES) {
-            Optional<Holder.Reference<Biome>> holder = getter.get(zone.biome);
-            if (holder.isEmpty()) {
-                RivesUndergroundBiomes.LOGGER.error(
-                        "Biome {} is missing; underground biomes disabled", zone.biome.location());
-                return DISABLED;
-            }
-            ours[zone.ordinal()] = holder.get();
+            Holder<Biome> biome = holder(getter, zone.biome);
+            Holder<Biome> deep = zone.deepBiome == null ? biome : holder(getter, zone.deepBiome);
+            if (biome == null || deep == null) return DISABLED;
+            ours[zone.ordinal() * 2] = biome;
+            ours[zone.ordinal() * 2 + 1] = deep;
         }
         return ours;
+    }
+
+    @Nullable
+    private static Holder<Biome> holder(HolderGetter<Biome> getter, ResourceKey<Biome> key) {
+        Optional<Holder.Reference<Biome>> holder = getter.get(key);
+        if (holder.isEmpty()) {
+            RivesUndergroundBiomes.LOGGER.error("Biome {} is missing; underground biomes disabled", key.location());
+            return null;
+        }
+        return holder.get();
     }
 
     // x y z are quart coordinates as passed to getNoiseBiome
@@ -87,7 +98,7 @@ public final class BiomeSwap {
         // sampled only for candidates since a mod like TerraBlender may have replaced the lookup
         // that held the vanilla target point
         Climate.TargetPoint target = sampler.sample(x, y, z);
-        if (target.depth() < START_DEPTH) return natural;
+        if (target.depth() < MIN_START_DEPTH) return natural;
         if (zone == null) {
             Holder<Biome> surface = inherits ? natural : lookup(parameters, atSurface(target), x, y, z);
             zone = Zone.ofSurface(surface);
@@ -95,7 +106,9 @@ public final class BiomeSwap {
                 zone = neighbourZone(parameters, x, y, z, sampler);
             if (zone == null) return natural;
         }
-        return ours[zone.ordinal()];
+        if (target.depth() < zone.startDepth) return natural;
+        boolean deep = QuartPos.toBlock(y) < Zone.DEEP_BELOW_Y;
+        return ours[zone.ordinal() * 2 + (deep ? 1 : 0)];
     }
 
     private static Zone neighbourZone(

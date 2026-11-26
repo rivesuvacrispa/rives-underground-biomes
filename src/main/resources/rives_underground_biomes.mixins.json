@@ -4,14 +4,21 @@
   "package": "com.rivesuvacrispa.rivesundergroundbiomes.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "BiomeFilterMixin",
     "ChunkGeneratorMixin",
+    "CoralFeatureMixin",
     "HolderReferenceAccessor",
     "HuskMixin",
     "MultiNoiseBiomeSourceMixin",
-    "StrayMixin"
+    "NoiseBasedChunkGeneratorMixin",
+    "StrayMixin",
+    "StructureStartMixin",
+    "WaterAnimalMixin",
+    "WorldGenRegionMixin"
   ],
   "client": [
-    "client.FogRendererMixin"
+    "client.FogRendererMixin",
+    "client.SheetsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

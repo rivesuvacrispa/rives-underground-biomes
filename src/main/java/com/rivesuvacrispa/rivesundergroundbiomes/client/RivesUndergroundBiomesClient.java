@@ -1,22 +1,30 @@
 package com.rivesuvacrispa.rivesundergroundbiomes.client;
 
+import com.rivesuvacrispa.rivesundergroundbiomes.ModBlockEntities;
 import com.rivesuvacrispa.rivesundergroundbiomes.ModBlocks;
 import com.rivesuvacrispa.rivesundergroundbiomes.ModEntities;
 import com.rivesuvacrispa.rivesundergroundbiomes.RivesUndergroundBiomes;
+import com.rivesuvacrispa.rivesundergroundbiomes.block.BiomeChestBlockEntity;
 import com.rivesuvacrispa.rivesundergroundbiomes.entity.JungleSpider;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.renderer.entity.SilverfishRenderer;
 import net.minecraft.client.renderer.entity.SkeletonRenderer;
 import net.minecraft.client.renderer.entity.SpiderRenderer;
 import net.minecraft.client.renderer.entity.ZombieRenderer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.level.block.Block;
 
 public class RivesUndergroundBiomesClient implements ClientModInitializer {
     private static final ResourceLocation ANT = RivesUndergroundBiomes.id("textures/entity/ant.png");
@@ -30,6 +38,16 @@ public class RivesUndergroundBiomesClient implements ClientModInitializer {
     public void onInitializeClient() {
         ModBlocks.decorations().forEach(block -> BlockRenderLayerMap.INSTANCE.putBlock(block, RenderType.cutout()));
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.translucent(), ModBlocks.THIN_ICE);
+
+        BlockEntityRenderers.register(ModBlockEntities.BIOME_CHEST, ChestRenderer::new);
+        for (Block chest : ModBlocks.chests()) {
+            BiomeChestBlockEntity display = new BiomeChestBlockEntity(BlockPos.ZERO, chest.defaultBlockState());
+            BuiltinItemRendererRegistry.INSTANCE.register(
+                    chest,
+                    (stack, mode, poseStack, buffers, light, overlay) -> Minecraft.getInstance()
+                            .getBlockEntityRenderDispatcher()
+                            .renderItem(display, poseStack, buffers, light, overlay));
+        }
 
         EntityRendererRegistry.register(ModEntities.ANT, context -> new SilverfishRenderer(context) {
             @Override

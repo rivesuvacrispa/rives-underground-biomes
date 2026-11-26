@@ -13,10 +13,12 @@ public class RubDataGenerator implements DataGeneratorEntrypoint {
         pack.addProvider(ModelProvider::new);
         pack.addProvider(LootProvider::new);
         pack.addProvider(EntityLootProvider::new);
+        pack.addProvider(ChestLootProvider::new);
         TagProviders.Blocks blockTags = pack.addProvider(TagProviders.Blocks::new);
         pack.addProvider((output, registries) -> new TagProviders.Items(output, registries, blockTags));
         pack.addProvider(TagProviders.Biomes::new);
         pack.addProvider(TagProviders.EntityTypes::new);
+        pack.addProvider(TagProviders.Structures::new);
         pack.addProvider(RecipeProvider::new);
         pack.addProvider(LangProvider::new);
         pack.addProvider(CreateCrushingProvider::new);

@@ -14,6 +14,7 @@ repositories {
     maven { url = 'https://maven.fabricmc.net/' }
     maven { url = 'https://maven.blamejared.com/' }
     maven { url = 'https://maven.minecraftforge.net/' }
+    maven { url = 'https://api.modrinth.com/maven' }
 }
 
 fabricApi {
@@ -26,6 +27,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modLocalRuntime "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_runtime_version}"
+    modLocalRuntime "maven.modrinth:worldedit:${project.worldedit_runtime_version}"
     modCompileOnly "com.github.glitchfiend:TerraBlender-fabric:${project.minecraft_version}-${project.terrablender_version}"
 }
 

@@ -41,7 +41,7 @@ final class ChunkBiomes {
 
     private static byte classify(Holder<Biome> biome) {
         for (Zone zone : Zone.VALUES) {
-            if (biome.is(zone.biome)) return (byte) (zone.ordinal() * 2 + 2);
+            if (zone.isBiome(biome)) return (byte) (zone.ordinal() * 2 + 2);
         }
         Zone surface = Zone.ofSurface(biome);
         return surface == null ? 1 : (byte) (surface.ordinal() * 2 + 3);

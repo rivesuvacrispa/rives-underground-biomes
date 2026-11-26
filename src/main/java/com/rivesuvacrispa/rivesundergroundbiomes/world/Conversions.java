@@ -19,23 +19,39 @@ public final class Conversions {
     @SuppressWarnings("unchecked")
     private static final Reference2ObjectOpenHashMap<Block, BlockState>[] BIOME_ONLY =
             new Reference2ObjectOpenHashMap[Zone.VALUES.length];
+    // features place this where water has to survive the conversion
+    // like desert water into quicksand or ice caves water into ice
+    // the converter turns it into water after converting the chunk
+    public static final BlockState WATER_MARKER = Blocks.STRUCTURE_VOID.defaultBlockState();
     // lets the converter skip sections without any
     private static final Set<Block> SOURCES = new ReferenceOpenHashSet<>();
 
     public static void build() {
         for (Zone zone : Zone.VALUES) {
-            Reference2ObjectOpenHashMap<Block, BlockState> map = new Reference2ObjectOpenHashMap<>();
-            Host stone = Host.of(zone, false);
-            Host deep = Host.of(zone, true);
-            map.put(Blocks.STONE, stone.block().defaultBlockState());
-            map.put(Blocks.DEEPSLATE, deep.block().defaultBlockState());
+            BY_ZONE[zone.ordinal()] = new Reference2ObjectOpenHashMap<>();
+            BIOME_ONLY[zone.ordinal()] = new Reference2ObjectOpenHashMap<>();
+        }
+        for (Host host : Host.VALUES) {
+            if (host.zone == Zone.REEF) continue;
+            Reference2ObjectOpenHashMap<Block, BlockState> map = BY_ZONE[host.zone.ordinal()];
+            map.put(host.deep ? Blocks.DEEPSLATE : Blocks.STONE, host.block().defaultBlockState());
             for (OreKind kind : OreKind.VALUES) {
-                map.put(kind.stoneOre, ModBlocks.ore(stone, kind).defaultBlockState());
-                map.put(kind.deepOre, ModBlocks.ore(deep, kind).defaultBlockState());
+                map.put(kind.vanillaOre(host.deep), ModBlocks.ore(host, kind).defaultBlockState());
             }
-            BY_ZONE[zone.ordinal()] = map;
-            SOURCES.addAll(map.keySet());
-            Reference2ObjectOpenHashMap<Block, BlockState> biomeOnly = new Reference2ObjectOpenHashMap<>();
+        }
+        Reference2ObjectOpenHashMap<Block, BlockState> roof = BY_ZONE[Zone.REEF.ordinal()];
+        Reference2ObjectOpenHashMap<Block, BlockState> reef = BIOME_ONLY[Zone.REEF.ordinal()];
+        roof.put(Blocks.STONE, Blocks.SANDSTONE.defaultBlockState());
+        reef.put(Blocks.STONE, ModBlocks.PEARLSTONE.defaultBlockState());
+        reef.put(Blocks.DEEPSLATE, ModBlocks.PEARLSTONE.defaultBlockState());
+        for (OreKind kind : OreKind.VALUES) {
+            roof.put(kind.stoneOre, ModBlocks.ore(Host.SANDSTONE, kind).defaultBlockState());
+            BlockState pearlstoneOre = ModBlocks.ore(Host.PEARLSTONE, kind).defaultBlockState();
+            reef.put(kind.stoneOre, pearlstoneOre);
+            reef.put(kind.deepOre, pearlstoneOre);
+        }
+        for (Zone zone : Zone.VALUES) {
+            Reference2ObjectOpenHashMap<Block, BlockState> biomeOnly = BIOME_ONLY[zone.ordinal()];
             if (zone == Zone.ICE) {
                 biomeOnly.put(Blocks.WATER, Blocks.ICE.defaultBlockState());
                 biomeOnly.put(Blocks.LAVA, Blocks.POWDER_SNOW.defaultBlockState());
@@ -44,7 +60,7 @@ public final class Conversions {
             if (zone == Zone.DESERT) biomeOnly.put(Blocks.WATER, ModBlocks.QUICKSAND.defaultBlockState());
             // replace lava with water because lava would burn the jungle down
             if (zone == Zone.JUNGLE) biomeOnly.put(Blocks.LAVA, Blocks.WATER.defaultBlockState());
-            BIOME_ONLY[zone.ordinal()] = biomeOnly;
+            SOURCES.addAll(BY_ZONE[zone.ordinal()].keySet());
             SOURCES.addAll(biomeOnly.keySet());
         }
     }

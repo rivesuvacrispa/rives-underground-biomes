@@ -11,6 +11,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,11 +27,12 @@ import java.util.function.Predicate;
 
 // MonsterRoomFeature but with custom blocks and mobs
 public class DungeonFeature extends Feature<DungeonFeature.Config> {
-    public record Config(BlockStateProvider wall, BlockStateProvider floor, List<EntityType<?>> mobs)
+    public record Config(BlockStateProvider wall, BlockStateProvider floor, BlockState chest, List<EntityType<?>> mobs)
             implements FeatureConfiguration {
         public static final Codec<Config> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                         BlockStateProvider.CODEC.fieldOf("wall").forGetter(Config::wall),
                         BlockStateProvider.CODEC.fieldOf("floor").forGetter(Config::floor),
+                        BlockState.CODEC.fieldOf("chest").forGetter(Config::chest),
                         ExtraCodecs.nonEmptyList(BuiltInRegistries.ENTITY_TYPE
                                         .byNameCodec()
                                         .listOf())
@@ -80,12 +82,12 @@ public class DungeonFeature extends Feature<DungeonFeature.Config> {
                     BlockState state = level.getBlockState(pos);
                     boolean shell = x == minX || x == maxX || z == minZ || z == maxZ || y == -1;
                     if (!shell) {
-                        if (!state.is(Blocks.CHEST) && !state.is(Blocks.SPAWNER))
+                        if (!(state.getBlock() instanceof ChestBlock) && !state.is(Blocks.SPAWNER))
                             safeSetBlock(level, pos, AIR, replaceable);
                     } else if (pos.getY() >= level.getMinBuildHeight()
                             && !level.getBlockState(pos.below()).isSolid()) {
                         level.setBlock(pos, AIR, 2);
-                    } else if (state.isSolid() && !state.is(Blocks.CHEST)) {
+                    } else if (state.isSolid() && !(state.getBlock() instanceof ChestBlock)) {
                         BlockStateProvider provider = y == -1 ? config.floor() : config.wall();
                         safeSetBlock(level, pos, provider.getState(random, pos), replaceable);
                     }
@@ -105,8 +107,7 @@ public class DungeonFeature extends Feature<DungeonFeature.Config> {
                     if (level.getBlockState(pos.relative(direction)).isSolid()) walls++;
                 }
                 if (walls != 1) continue;
-                safeSetBlock(
-                        level, pos, StructurePiece.reorient(level, pos, Blocks.CHEST.defaultBlockState()), replaceable);
+                safeSetBlock(level, pos, StructurePiece.reorient(level, pos, config.chest()), replaceable);
                 RandomizableContainerBlockEntity.setLootTable(level, random, pos, BuiltInLootTables.SIMPLE_DUNGEON);
                 break;
             }

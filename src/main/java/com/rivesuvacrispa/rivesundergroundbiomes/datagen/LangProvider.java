@@ -9,6 +9,8 @@ import com.rivesuvacrispa.rivesundergroundbiomes.world.Zone;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 
 import java.util.Arrays;
@@ -22,15 +24,20 @@ public class LangProvider extends FabricLanguageProvider {
     @Override
     public void generateTranslations(TranslationBuilder builder) {
         builder.add("itemGroup." + RivesUndergroundBiomes.MOD_ID, "Rives Underground Biomes");
-        builder.add(biomeKey(Zone.DESERT), "Underground Desert");
-        builder.add(biomeKey(Zone.JUNGLE), "Underground Jungle");
-        builder.add(biomeKey(Zone.ICE), "Ice Caves");
+        builder.add(biomeKey(Zone.DESERT.biome), "Underground Desert");
+        builder.add(biomeKey(Zone.JUNGLE.biome), "Underground Jungle");
+        builder.add(biomeKey(Zone.ICE.biome), "Ice Caves");
+        builder.add(biomeKey(Zone.REEF.biome), "Underground Reef");
+        builder.add(biomeKey(Zone.REEF.deepBiome), "Underground Ocean");
         builder.add(ModBlocks.QUICKSAND, "Quicksand");
         builder.add(ModBlocks.QUICKSAND_BUCKET, "Quicksand Bucket");
         builder.add(ModBlocks.THIN_ICE, "Thin Ice");
+        builder.add(ModBlocks.PEARL_SAND, "Pearl Sand");
         ModBlocks.newHosts().forEach(block -> builder.add(block, titleOf(block)));
         ModBlocks.decorations().forEach(block -> builder.add(block, titleOf(block)));
         ModBlocks.permafrostBricks().forEach(block -> builder.add(block, titleOf(block)));
+        ModBlocks.pearlstoneBricks().forEach(block -> builder.add(block, titleOf(block)));
+        ModBlocks.chests().forEach(block -> builder.add(block, titleOf(block)));
         builder.add(ModEntities.ANT, "Ant");
         builder.add(ModEntities.MUMMY_SKELETON, "Mummy Skeleton");
         builder.add(ModEntities.FROZEN, "Frozen");
@@ -46,9 +53,9 @@ public class LangProvider extends FabricLanguageProvider {
         }
     }
 
-    private static String biomeKey(Zone zone) {
-        return "biome." + zone.biome.location().getNamespace() + "."
-                + zone.biome.location().getPath();
+    private static String biomeKey(ResourceKey<Biome> biome) {
+        return "biome." + biome.location().getNamespace() + "."
+                + biome.location().getPath();
     }
 
     private static String titleOf(Block block) {

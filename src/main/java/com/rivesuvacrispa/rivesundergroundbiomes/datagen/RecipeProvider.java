@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -52,6 +53,38 @@ public class RecipeProvider extends FabricRecipeProvider {
             stonecutterResultFromBase(exporter, blocks, ModBlocks.PERMAFROST_BRICK_STAIRS, base);
             stonecutterResultFromBase(exporter, blocks, ModBlocks.PERMAFROST_BRICK_SLAB, base, 2);
             stonecutterResultFromBase(exporter, RecipeCategory.DECORATIONS, ModBlocks.PERMAFROST_BRICK_WALL, base);
+        }
+
+        polished(exporter, blocks, ModBlocks.PEARLSTONE_BRICKS, ModBlocks.PEARLSTONE);
+        stairBuilder(ModBlocks.PEARLSTONE_BRICK_STAIRS, Ingredient.of(ModBlocks.PEARLSTONE_BRICKS))
+                .unlockedBy(getHasName(ModBlocks.PEARLSTONE_BRICKS), has(ModBlocks.PEARLSTONE_BRICKS))
+                .save(exporter);
+        slab(exporter, blocks, ModBlocks.PEARLSTONE_BRICK_SLAB, ModBlocks.PEARLSTONE_BRICKS);
+        wall(exporter, RecipeCategory.DECORATIONS, ModBlocks.PEARLSTONE_BRICK_WALL, ModBlocks.PEARLSTONE_BRICKS);
+        stonecutterResultFromBase(exporter, blocks, ModBlocks.PEARLSTONE_BRICKS, ModBlocks.PEARLSTONE);
+        chiseled(exporter, blocks, ModBlocks.CHISELED_PEARLSTONE, ModBlocks.PEARLSTONE_BRICK_SLAB);
+        ShapedRecipeBuilder.shaped(blocks, ModBlocks.PEARLSTONE_PILLAR, 2)
+                .define('#', ModBlocks.PEARLSTONE_BRICKS)
+                .pattern("#")
+                .pattern("#")
+                .unlockedBy(getHasName(ModBlocks.PEARLSTONE_BRICKS), has(ModBlocks.PEARLSTONE_BRICKS))
+                .save(exporter);
+        smeltingResultFromBase(exporter, ModBlocks.SMOOTH_PEARLSTONE, ModBlocks.PEARLSTONE);
+        stairBuilder(ModBlocks.SMOOTH_PEARLSTONE_STAIRS, Ingredient.of(ModBlocks.SMOOTH_PEARLSTONE))
+                .unlockedBy(getHasName(ModBlocks.SMOOTH_PEARLSTONE), has(ModBlocks.SMOOTH_PEARLSTONE))
+                .save(exporter);
+        slab(exporter, blocks, ModBlocks.SMOOTH_PEARLSTONE_SLAB, ModBlocks.SMOOTH_PEARLSTONE);
+        wall(exporter, RecipeCategory.DECORATIONS, ModBlocks.SMOOTH_PEARLSTONE_WALL, ModBlocks.SMOOTH_PEARLSTONE);
+        stonecutterResultFromBase(exporter, blocks, ModBlocks.SMOOTH_PEARLSTONE_STAIRS, ModBlocks.SMOOTH_PEARLSTONE);
+        stonecutterResultFromBase(exporter, blocks, ModBlocks.SMOOTH_PEARLSTONE_SLAB, ModBlocks.SMOOTH_PEARLSTONE, 2);
+        stonecutterResultFromBase(
+                exporter, RecipeCategory.DECORATIONS, ModBlocks.SMOOTH_PEARLSTONE_WALL, ModBlocks.SMOOTH_PEARLSTONE);
+        for (ItemLike base : List.of(ModBlocks.PEARLSTONE, ModBlocks.PEARLSTONE_BRICKS)) {
+            stonecutterResultFromBase(exporter, blocks, ModBlocks.PEARLSTONE_BRICK_STAIRS, base);
+            stonecutterResultFromBase(exporter, blocks, ModBlocks.PEARLSTONE_BRICK_SLAB, base, 2);
+            stonecutterResultFromBase(exporter, RecipeCategory.DECORATIONS, ModBlocks.PEARLSTONE_BRICK_WALL, base);
+            stonecutterResultFromBase(exporter, blocks, ModBlocks.CHISELED_PEARLSTONE, base);
+            stonecutterResultFromBase(exporter, blocks, ModBlocks.PEARLSTONE_PILLAR, base);
         }
     }
 

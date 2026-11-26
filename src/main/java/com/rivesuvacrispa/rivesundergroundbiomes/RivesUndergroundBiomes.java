@@ -26,6 +26,7 @@ public class RivesUndergroundBiomes implements ModInitializer {
     @Override
     public void onInitialize() {
         ModBlocks.init();
+        ModBlockEntities.init();
         ModEntities.init();
         ModFeatures.init();
         Conversions.build();

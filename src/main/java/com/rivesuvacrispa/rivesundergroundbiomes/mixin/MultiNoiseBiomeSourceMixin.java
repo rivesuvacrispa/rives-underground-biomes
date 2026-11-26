@@ -41,7 +41,9 @@ public abstract class MultiNoiseBiomeSourceMixin {
     @ModifyReturnValue(method = "collectPossibleBiomes", at = @At("RETURN"))
     private Stream<Holder<Biome>> rub$addPossibleBiomes(Stream<Holder<Biome>> original) {
         Holder<Biome>[] biomes = rub$biomes();
-        return biomes.length == 0 ? original : Stream.concat(original, Arrays.stream(biomes));
+        return biomes.length == 0
+                ? original
+                : Stream.concat(original, Arrays.stream(biomes).distinct());
     }
 
     // TerraBlender and Alex caves cancel it at head

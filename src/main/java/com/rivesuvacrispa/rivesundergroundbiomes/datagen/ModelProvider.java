@@ -14,16 +14,21 @@ import net.minecraft.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.data.models.blockstates.PropertyDispatch;
 import net.minecraft.data.models.blockstates.Variant;
 import net.minecraft.data.models.blockstates.VariantProperties;
+import net.minecraft.data.models.model.ModelLocationUtils;
 import net.minecraft.data.models.model.ModelTemplate;
 import net.minecraft.data.models.model.ModelTemplates;
 import net.minecraft.data.models.model.TextureMapping;
 import net.minecraft.data.models.model.TextureSlot;
 import net.minecraft.data.models.model.TexturedModel;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.Optional;
 
 public class ModelProvider extends FabricModelProvider {
+    private static final ModelTemplate CHEST_ITEM = new ModelTemplate(
+            Optional.of(new ResourceLocation("minecraft", "item/chest")), Optional.empty(), TextureSlot.PARTICLE);
     private static final ModelTemplate SPELEOTHEM = new ModelTemplate(
             Optional.of(new ResourceLocation("minecraft", "block/pointed_dripstone")),
             Optional.empty(),
@@ -39,12 +44,31 @@ public class ModelProvider extends FabricModelProvider {
         generators.createAxisAlignedPillarBlock(ModBlocks.MUDSTONE, TexturedModel.COLUMN);
         generators.createAxisAlignedPillarBlock(ModBlocks.GLACISLATE, TexturedModel.COLUMN);
         generators.createTrivialCube(ModBlocks.PERMAFROST);
+        generators.createTrivialCube(ModBlocks.PEARLSTONE);
+        generators.createTrivialCube(ModBlocks.PEARL_SAND);
+        generators.createRotatedPillarWithHorizontalVariant(
+                ModBlocks.PEARLSTONE_PILLAR, TexturedModel.COLUMN_ALT, TexturedModel.COLUMN_HORIZONTAL_ALT);
         generators
                 .family(ModBlocks.PERMAFROST_BRICKS)
                 .generateFor(new BlockFamily.Builder(ModBlocks.PERMAFROST_BRICKS)
                         .stairs(ModBlocks.PERMAFROST_BRICK_STAIRS)
                         .slab(ModBlocks.PERMAFROST_BRICK_SLAB)
                         .wall(ModBlocks.PERMAFROST_BRICK_WALL)
+                        .getFamily());
+        generators
+                .family(ModBlocks.PEARLSTONE_BRICKS)
+                .generateFor(new BlockFamily.Builder(ModBlocks.PEARLSTONE_BRICKS)
+                        .stairs(ModBlocks.PEARLSTONE_BRICK_STAIRS)
+                        .slab(ModBlocks.PEARLSTONE_BRICK_SLAB)
+                        .wall(ModBlocks.PEARLSTONE_BRICK_WALL)
+                        .chiseled(ModBlocks.CHISELED_PEARLSTONE)
+                        .getFamily());
+        generators
+                .family(ModBlocks.SMOOTH_PEARLSTONE)
+                .generateFor(new BlockFamily.Builder(ModBlocks.SMOOTH_PEARLSTONE)
+                        .stairs(ModBlocks.SMOOTH_PEARLSTONE_STAIRS)
+                        .slab(ModBlocks.SMOOTH_PEARLSTONE_SLAB)
+                        .wall(ModBlocks.SMOOTH_PEARLSTONE_WALL)
                         .getFamily());
         for (Host host : Host.VALUES) {
             for (OreKind kind : OreKind.VALUES) {
@@ -63,10 +87,23 @@ public class ModelProvider extends FabricModelProvider {
         generators.createCrossBlock(ModBlocks.ANTHILL, BlockModelGenerators.TintState.NOT_TINTED);
         vanillaTextured(generators, ModBlocks.QUICKSAND, "sand");
         vanillaTextured(generators, ModBlocks.THIN_ICE, "ice");
+        chest(generators, ModBlocks.DESERT_CHEST, Blocks.CUT_SANDSTONE);
+        chest(generators, ModBlocks.JUNGLE_CHEST, Blocks.JUNGLE_PLANKS);
+        chest(generators, ModBlocks.FROST_CHEST, ModBlocks.PERMAFROST_BRICKS);
+        chest(generators, ModBlocks.PRISMARINE_CHEST, Blocks.PRISMARINE_BRICKS);
+        chest(generators, ModBlocks.SPIDER_CHEST, Blocks.OAK_PLANKS);
     }
 
-    private static void vanillaTextured(
-            BlockModelGenerators generators, net.minecraft.world.level.block.Block block, String texture) {
+    // particle only like the vanilla chest
+    private static void chest(BlockModelGenerators generators, Block chest, Block particleBlock) {
+        TextureMapping particle = TextureMapping.particle(particleBlock);
+        ResourceLocation model = ModelTemplates.PARTICLE_ONLY.create(chest, particle, generators.modelOutput);
+        generators.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(chest, model));
+        CHEST_ITEM.create(ModelLocationUtils.getModelLocation(chest.asItem()), particle, generators.modelOutput);
+        generators.skipAutoItemBlock(chest);
+    }
+
+    private static void vanillaTextured(BlockModelGenerators generators, Block block, String texture) {
         ResourceLocation model = ModelTemplates.CUBE_ALL.create(
                 block,
                 TextureMapping.cube(new ResourceLocation("minecraft", "block/" + texture)),

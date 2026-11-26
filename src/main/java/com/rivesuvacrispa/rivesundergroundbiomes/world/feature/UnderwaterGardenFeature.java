@@ -7,10 +7,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.KelpBlock;
 import net.minecraft.world.level.block.SeaPickleBlock;
-import net.minecraft.world.level.block.TallSeagrassBlock;
-import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
@@ -52,19 +49,7 @@ public class UnderwaterGardenFeature extends Feature<UnderwaterGardenFeature.Con
             if ((roll -= config.seagrass()) < 0) {
                 Carving.set(level, floor, Blocks.SEAGRASS.defaultBlockState());
             } else if ((roll -= config.tallSeagrass()) < 0) {
-                if (!isWater(level, floor.above())) continue;
-                Carving.set(
-                        level,
-                        floor,
-                        Blocks.TALL_SEAGRASS
-                                .defaultBlockState()
-                                .setValue(TallSeagrassBlock.HALF, DoubleBlockHalf.LOWER));
-                Carving.set(
-                        level,
-                        floor.above(),
-                        Blocks.TALL_SEAGRASS
-                                .defaultBlockState()
-                                .setValue(TallSeagrassBlock.HALF, DoubleBlockHalf.UPPER));
+                if (!tallSeagrass(level, floor)) continue;
             } else if ((roll -= config.kelp()) < 0) {
                 kelp(level, floor, random);
             } else {
@@ -94,19 +79,19 @@ public class UnderwaterGardenFeature extends Feature<UnderwaterGardenFeature.Con
         return null;
     }
 
-    private static void kelp(WorldGenLevel level, BlockPos floor, RandomSource random) {
+    static boolean tallSeagrass(WorldGenLevel level, BlockPos floor) {
+        if (!isWater(level, floor.above())) return false;
+        Carving.tallSeagrass(level, floor);
+        return true;
+    }
+
+    static boolean kelp(WorldGenLevel level, BlockPos floor, RandomSource random) {
         int height = 2 + random.nextInt(9);
         int length = 0;
         while (length < height && isWater(level, floor.above(length)) && isWater(level, floor.above(length + 1)))
             length++;
-        for (int i = 0; i < length; i++) {
-            Carving.set(
-                    level,
-                    floor.above(i),
-                    i == length - 1
-                            ? Blocks.KELP.defaultBlockState().setValue(KelpBlock.AGE, random.nextInt(4) + 20)
-                            : Blocks.KELP_PLANT.defaultBlockState());
-        }
+        Carving.kelp(level, floor, length, random);
+        return length > 0;
     }
 
     private static boolean isWater(WorldGenLevel level, BlockPos pos) {

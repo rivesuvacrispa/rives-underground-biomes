@@ -1,6 +1,7 @@
 package com.rivesuvacrispa.rivesundergroundbiomes;
 
 import com.rivesuvacrispa.rivesundergroundbiomes.block.AnthillBlock;
+import com.rivesuvacrispa.rivesundergroundbiomes.block.BiomeChestBlock;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.Host;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.ModBlockTags;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.OreKind;
@@ -22,6 +23,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.RedStoneOreBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.SandBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
@@ -43,6 +45,18 @@ public final class ModBlocks {
     public static Block MUDSTONE;
     public static Block PERMAFROST;
     public static Block GLACISLATE;
+    public static Block PEARLSTONE;
+    public static Block PEARL_SAND;
+    public static Block PEARLSTONE_BRICKS;
+    public static Block PEARLSTONE_BRICK_STAIRS;
+    public static Block PEARLSTONE_BRICK_SLAB;
+    public static Block PEARLSTONE_BRICK_WALL;
+    public static Block CHISELED_PEARLSTONE;
+    public static Block PEARLSTONE_PILLAR;
+    public static Block SMOOTH_PEARLSTONE;
+    public static Block SMOOTH_PEARLSTONE_STAIRS;
+    public static Block SMOOTH_PEARLSTONE_SLAB;
+    public static Block SMOOTH_PEARLSTONE_WALL;
     public static Block PERMAFROST_BRICKS;
     public static Block PERMAFROST_BRICK_STAIRS;
     public static Block PERMAFROST_BRICK_SLAB;
@@ -56,6 +70,11 @@ public final class ModBlocks {
     public static Block THIN_ICE;
     public static Block QUICKSAND;
     public static Item QUICKSAND_BUCKET;
+    public static Block DESERT_CHEST;
+    public static Block JUNGLE_CHEST;
+    public static Block FROST_CHEST;
+    public static Block PRISMARINE_CHEST;
+    public static Block SPIDER_CHEST;
 
     private static final SoundType ANTHILL_SOUND = new SoundType(
             1.0F,
@@ -82,6 +101,31 @@ public final class ModBlocks {
         GLACISLATE = register(
                 "glacislate",
                 new RotatedPillarBlock(Properties.copy(Blocks.DEEPSLATE).mapColor(MapColor.ICE)));
+        PEARLSTONE = register(
+                "pearlstone", new Block(Properties.copy(Blocks.DEEPSLATE).mapColor(MapColor.QUARTZ)));
+        PEARL_SAND = register(
+                "pearl_sand",
+                new SandBlock(0xE4DCF0, Properties.copy(Blocks.SAND).mapColor(MapColor.QUARTZ)));
+        PEARLSTONE_BRICKS = register(
+                "pearlstone_bricks",
+                new Block(Properties.copy(Blocks.DEEPSLATE_BRICKS).mapColor(MapColor.QUARTZ)));
+        PEARLSTONE_BRICK_STAIRS = register(
+                "pearlstone_brick_stairs",
+                new StairBlock(PEARLSTONE_BRICKS.defaultBlockState(), Properties.copy(PEARLSTONE_BRICKS)));
+        PEARLSTONE_BRICK_SLAB = register("pearlstone_brick_slab", new SlabBlock(Properties.copy(PEARLSTONE_BRICKS)));
+        PEARLSTONE_BRICK_WALL = register(
+                "pearlstone_brick_wall",
+                new WallBlock(Properties.copy(PEARLSTONE_BRICKS).forceSolidOn()));
+        CHISELED_PEARLSTONE = register("chiseled_pearlstone", new Block(Properties.copy(PEARLSTONE_BRICKS)));
+        PEARLSTONE_PILLAR = register("pearlstone_pillar", new RotatedPillarBlock(Properties.copy(PEARLSTONE_BRICKS)));
+        SMOOTH_PEARLSTONE = register("smooth_pearlstone", new Block(Properties.copy(PEARLSTONE_BRICKS)));
+        SMOOTH_PEARLSTONE_STAIRS = register(
+                "smooth_pearlstone_stairs",
+                new StairBlock(SMOOTH_PEARLSTONE.defaultBlockState(), Properties.copy(SMOOTH_PEARLSTONE)));
+        SMOOTH_PEARLSTONE_SLAB = register("smooth_pearlstone_slab", new SlabBlock(Properties.copy(SMOOTH_PEARLSTONE)));
+        SMOOTH_PEARLSTONE_WALL = register(
+                "smooth_pearlstone_wall",
+                new WallBlock(Properties.copy(SMOOTH_PEARLSTONE).forceSolidOn()));
         PERMAFROST_BRICKS = register(
                 "permafrost_bricks",
                 new Block(Properties.copy(Blocks.STONE_BRICKS).mapColor(MapColor.CLAY)));
@@ -175,6 +219,16 @@ public final class ModBlocks {
                 RivesUndergroundBiomes.id("quicksand_bucket"),
                 new SolidBucketItem(QUICKSAND, SoundEvents.SAND_PLACE, new Item.Properties().stacksTo(1)));
         ALL_ITEMS.add(QUICKSAND_BUCKET);
+
+        DESERT_CHEST = register("desert_chest", new BiomeChestBlock(Properties.copy(Blocks.SANDSTONE)));
+        JUNGLE_CHEST = register("jungle_chest", new BiomeChestBlock(Properties.copy(Blocks.JUNGLE_PLANKS)));
+        FROST_CHEST = register("frost_chest", new BiomeChestBlock(Properties.copy(PERMAFROST_BRICKS)));
+        PRISMARINE_CHEST = register("prismarine_chest", new BiomeChestBlock(Properties.copy(Blocks.PRISMARINE)));
+        SPIDER_CHEST = register("spider_chest", new BiomeChestBlock(Properties.copy(Blocks.CHEST)));
+    }
+
+    public static List<Block> chests() {
+        return List.of(DESERT_CHEST, JUNGLE_CHEST, FROST_CHEST, PRISMARINE_CHEST, SPIDER_CHEST);
     }
 
     private static Properties speleothem(MapColor color, SoundType sound, float hardness) {
@@ -188,6 +242,20 @@ public final class ModBlocks {
                 .offsetType(BlockBehaviour.OffsetType.XZ)
                 .pushReaction(PushReaction.DESTROY)
                 .isRedstoneConductor((state, level, pos) -> false);
+    }
+
+    public static List<Block> pearlstoneBricks() {
+        return List.of(
+                PEARLSTONE_BRICKS,
+                PEARLSTONE_BRICK_STAIRS,
+                PEARLSTONE_BRICK_SLAB,
+                PEARLSTONE_BRICK_WALL,
+                CHISELED_PEARLSTONE,
+                PEARLSTONE_PILLAR,
+                SMOOTH_PEARLSTONE,
+                SMOOTH_PEARLSTONE_STAIRS,
+                SMOOTH_PEARLSTONE_SLAB,
+                SMOOTH_PEARLSTONE_WALL);
     }
 
     public static List<Block> permafrostBricks() {
@@ -212,7 +280,7 @@ public final class ModBlocks {
 
     // sandstone and mud are vanilla
     public static List<Block> newHosts() {
-        return List.of(SANDSLATE, MUDSTONE, PERMAFROST, GLACISLATE);
+        return List.of(SANDSLATE, MUDSTONE, PERMAFROST, GLACISLATE, PEARLSTONE);
     }
 
     private static Block register(String name, Block block) {

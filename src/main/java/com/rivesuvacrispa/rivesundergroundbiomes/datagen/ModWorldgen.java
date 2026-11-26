@@ -4,30 +4,44 @@ import com.rivesuvacrispa.rivesundergroundbiomes.ModBlocks;
 import com.rivesuvacrispa.rivesundergroundbiomes.ModEntities;
 import com.rivesuvacrispa.rivesundergroundbiomes.ModFeatures;
 import com.rivesuvacrispa.rivesundergroundbiomes.RivesUndergroundBiomes;
+import com.rivesuvacrispa.rivesundergroundbiomes.block.Host;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.ModBlockTags;
+import com.rivesuvacrispa.rivesundergroundbiomes.block.OreKind;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.Zone;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.AttachedBlockFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.DungeonFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.NoiseNetFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.ReefCarpetFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.ReefShrineFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.RockFormationFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.SpeleothemFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.SunkenSubmarineFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.SupportedBlobFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.UnderwaterGardenFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.WaterCoatFeature;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.features.AquaticFeatures;
 import net.minecraft.data.worldgen.features.CaveFeatures;
 import net.minecraft.data.worldgen.features.FeatureUtils;
 import net.minecraft.data.worldgen.features.TreeFeatures;
 import net.minecraft.data.worldgen.features.VegetationFeatures;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,6 +51,7 @@ import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.WeightedPlacedFeature;
+import net.minecraft.world.level.levelgen.feature.configurations.MultifaceGrowthConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomPatchConfiguration;
@@ -63,6 +78,8 @@ import net.minecraft.world.level.levelgen.placement.RandomOffsetPlacement;
 import net.minecraft.world.level.levelgen.placement.RarityFilter;
 import net.minecraft.world.level.levelgen.structure.templatesystem.TagMatchTest;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -79,6 +96,7 @@ public final class ModWorldgen {
     static final String FROST_CRYSTALS = "frost_crystals";
     static final String SNOW_PATCH = "snow_patch";
     static final String ICE_DUNGEON = "ice_dungeon";
+    static final String ICE_BUBBLE = "ice_bubble";
     // Underground Jungle
     static final String GIANT_HIVE = "giant_hive";
     static final String SPIDER_NEST = "spider_nest";
@@ -110,13 +128,36 @@ public final class ModWorldgen {
     static final String SAND_PATCH = "sand_patch";
     static final String BURIED_RELIC = "buried_relic";
     static final String DESERT_DUNGEON = "desert_dungeon";
+    static final String PRISMARINE_GROTTO = "prismarine_grotto";
+    static final String ANT_BURROW = "ant_burrow";
+    // Underground Reef and Underground Ocean share these
+    static final String PEARL_SAND_BLOB = "pearl_sand_blob";
+    static final String SAND_BLOB = "reef_sand_blob";
+    static final String SANDSTONE_BLOB = "reef_sandstone_blob";
+    static final String CALCITE_BLOB = "reef_calcite_blob";
+    static final String PRISMARINE_BLOB = "reef_prismarine_blob";
+    static final String REEF_PATCHES = "reef_patches";
+    static final String HANGING_CORAL = "hanging_coral";
+    static final String REEF_CORALS = "reef_corals";
+    static final String REEF_CARPET = "reef_carpet";
+    static final String REEF_CEILING_PATCHES = "reef_ceiling_patches";
+    static final String REEF_GLOW_LICHEN = "reef_glow_lichen";
+    static final String COBBLESTONE_ROCKS = "reef_cobblestone_rocks";
+    static final String SANDSTONE_ROCKS = "reef_sandstone_rocks";
+    static final String REEF_SHRINES = "reef_shrines";
+    static final String LOST_SUBMARINE = "lost_submarine";
+    static final String SUNKEN_SUBMARINE = "sunken_submarine";
 
-    private static final int DUNGEON_ATTEMPTS = 6;
+    private static final int DUNGEON_ATTEMPTS = 12;
     private static final PlacementModifier RANGE =
             HeightRangePlacement.uniform(VerticalAnchor.aboveBottom(6), VerticalAnchor.absolute(80));
     // no trees or plants on stalagmites
     private static final BlockPredicate FLOOR = BlockPredicate.allOf(
             BlockPredicate.solid(), BlockPredicate.not(BlockPredicate.matchesTag(ModBlockTags.SPELEOTHEMS)));
+    private static final BlockPredicate CORAL_GROUND = BlockPredicate.allOf(
+            BlockPredicate.solid(),
+            BlockPredicate.not(BlockPredicate.matchesTag(BlockTags.CORAL_BLOCKS)),
+            BlockPredicate.not(BlockPredicate.matchesTag(ModBlockTags.REEF_STRUCTURE)));
 
     public static void configured(BootstapContext<ConfiguredFeature<?, ?>> context) {
         HolderGetter<ConfiguredFeature<?, ?>> vanilla = context.lookup(Registries.CONFIGURED_FEATURE);
@@ -187,7 +228,9 @@ public final class ModWorldgen {
                                 .add(ModBlocks.PERMAFROST_BRICKS.defaultBlockState(), 2)
                                 .add(ModBlocks.PERMAFROST.defaultBlockState(), 1)
                                 .add(Blocks.PACKED_ICE.defaultBlockState(), 1)),
+                        ModBlocks.FROST_CHEST.defaultBlockState(),
                         List.of(ModEntities.FROZEN, EntityType.STRAY)));
+        FeatureUtils.register(context, configuredKey(ICE_BUBBLE), ModFeatures.ICE_BUBBLE);
 
         FeatureUtils.register(context, configuredKey(GIANT_HIVE), ModFeatures.GIANT_HIVE);
         FeatureUtils.register(context, configuredKey(SPIDER_NEST), ModFeatures.SPIDER_NEST);
@@ -322,6 +365,7 @@ public final class ModWorldgen {
                                 .add(Blocks.MUD_BRICKS.defaultBlockState(), 2)
                                 .add(Blocks.PACKED_MUD.defaultBlockState(), 1)
                                 .add(Blocks.MOSS_BLOCK.defaultBlockState(), 1)),
+                        ModBlocks.JUNGLE_CHEST.defaultBlockState(),
                         List.of(ModEntities.JUNGLE_SLIME)));
         FeatureUtils.register(context, configuredKey(JUNGLE_SHAFT), ModFeatures.JUNGLE_SHAFT);
 
@@ -366,7 +410,133 @@ public final class ModWorldgen {
                         weighted(SimpleWeightedRandomList.<BlockState>builder()
                                 .add(Blocks.SMOOTH_SANDSTONE.defaultBlockState(), 3)
                                 .add(Blocks.CUT_SANDSTONE.defaultBlockState(), 1)),
+                        ModBlocks.DESERT_CHEST.defaultBlockState(),
                         List.of(EntityType.HUSK, ModEntities.MUMMY_SKELETON)));
+        FeatureUtils.register(context, configuredKey(PRISMARINE_GROTTO), ModFeatures.PRISMARINE_GROTTO);
+        FeatureUtils.register(context, configuredKey(ANT_BURROW), ModFeatures.ANT_BURROW);
+
+        FeatureUtils.register(
+                context,
+                configuredKey(PEARL_SAND_BLOB),
+                ModFeatures.SUPPORTED_BLOB,
+                new SupportedBlobFeature.Config(ModBlocks.PEARL_SAND.defaultBlockState(), UniformInt.of(2, 4)));
+        FeatureUtils.register(
+                context,
+                configuredKey(SAND_BLOB),
+                ModFeatures.SUPPORTED_BLOB,
+                new SupportedBlobFeature.Config(Blocks.SAND.defaultBlockState(), UniformInt.of(2, 3)));
+        FeatureUtils.register(
+                context, configuredKey(SANDSTONE_BLOB), Feature.ORE, pocket(Blocks.SANDSTONE.defaultBlockState(), 40));
+        FeatureUtils.register(
+                context, configuredKey(CALCITE_BLOB), Feature.ORE, pocket(Blocks.CALCITE.defaultBlockState(), 33));
+        FeatureUtils.register(
+                context,
+                configuredKey(PRISMARINE_BLOB),
+                Feature.ORE,
+                pocket(Blocks.PRISMARINE.defaultBlockState(), 20));
+        FeatureUtils.register(
+                context,
+                configuredKey(REEF_PATCHES),
+                ModFeatures.WATER_COAT,
+                new WaterCoatFeature.Config(
+                        weighted(SimpleWeightedRandomList.<BlockState>builder()
+                                .add(ModBlocks.PEARL_SAND.defaultBlockState(), 3)
+                                .add(Blocks.SANDSTONE.defaultBlockState(), 3)
+                                .add(Blocks.SAND.defaultBlockState(), 2)
+                                .add(Blocks.PRISMARINE.defaultBlockState(), 1)
+                                .add(Blocks.CALCITE.defaultBlockState(), 1)
+                                .add(Blocks.MOSS_BLOCK.defaultBlockState(), 1)
+                                .add(Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 1)
+                                .add(Blocks.COBBLESTONE.defaultBlockState(), 1)
+                                .add(Blocks.TUBE_CORAL_BLOCK.defaultBlockState(), 2)
+                                .add(Blocks.BRAIN_CORAL_BLOCK.defaultBlockState(), 2)
+                                .add(Blocks.BUBBLE_CORAL_BLOCK.defaultBlockState(), 2)
+                                .add(Blocks.FIRE_CORAL_BLOCK.defaultBlockState(), 2)
+                                .add(Blocks.HORN_CORAL_BLOCK.defaultBlockState(), 2)),
+                        UniformInt.of(3, 6)));
+        FeatureUtils.register(context, configuredKey(HANGING_CORAL), ModFeatures.HANGING_CORAL);
+        FeatureUtils.register(
+                context,
+                configuredKey(REEF_CARPET),
+                ModFeatures.REEF_CARPET,
+                new ReefCarpetFeature.Config(0.47F, 0.2F, 0.3F, 0.02F, 0.15F));
+        FeatureUtils.register(
+                context,
+                configuredKey(REEF_GLOW_LICHEN),
+                Feature.MULTIFACE_GROWTH,
+                new MultifaceGrowthConfiguration(
+                        (MultifaceBlock) Blocks.GLOW_LICHEN,
+                        20,
+                        false,
+                        true,
+                        true,
+                        0.5F,
+                        HolderSet.direct(
+                                Block::builtInRegistryHolder,
+                                Blocks.SANDSTONE,
+                                Blocks.CALCITE,
+                                Blocks.PRISMARINE,
+                                Blocks.COBBLESTONE,
+                                Blocks.MOSSY_COBBLESTONE)));
+        FeatureUtils.register(
+                context,
+                configuredKey(COBBLESTONE_ROCKS),
+                ModFeatures.ROCK_FORMATION,
+                new RockFormationFeature.Config(weighted(SimpleWeightedRandomList.<BlockState>builder()
+                        .add(Blocks.COBBLESTONE.defaultBlockState(), 5)
+                        .add(Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 4)
+                        .add(Blocks.MOSS_BLOCK.defaultBlockState(), 2))));
+        FeatureUtils.register(
+                context,
+                configuredKey(SANDSTONE_ROCKS),
+                ModFeatures.ROCK_FORMATION,
+                new RockFormationFeature.Config(oreRock(Host.SANDSTONE)));
+
+        List<ResourceLocation> frames =
+                List.of(RivesUndergroundBiomes.id("pearl_shrine"), RivesUndergroundBiomes.id("prismarine_shrine"));
+        FeatureUtils.register(
+                context,
+                configuredKey(REEF_SHRINES),
+                Feature.RANDOM_SELECTOR,
+                new RandomFeatureConfiguration(
+                        List.of(
+                                new WeightedPlacedFeature(
+                                        shrine(frames, BlockStateProvider.simple(Blocks.WET_SPONGE)), 0.15F),
+                                new WeightedPlacedFeature(
+                                        shrine(frames, depot(Blocks.GOLD_BLOCK, Blocks.RAW_GOLD_BLOCK, OreKind.GOLD)),
+                                        0.18F),
+                                new WeightedPlacedFeature(
+                                        shrine(frames, depot(Blocks.EMERALD_BLOCK, null, OreKind.EMERALD)), 0.21F),
+                                new WeightedPlacedFeature(
+                                        shrine(frames, depot(Blocks.LAPIS_BLOCK, null, OreKind.LAPIS)), 0.27F)),
+                        PlacementUtils.inlinePlaced(
+                                ModFeatures.REEF_SHRINE, new ReefShrineFeature.Config(frames, Optional.empty()))));
+        List<ResourceLocation> submarines = List.of(RivesUndergroundBiomes.id("lost_submarine"));
+        FeatureUtils.register(
+                context,
+                configuredKey(LOST_SUBMARINE),
+                ModFeatures.SUNKEN_SUBMARINE,
+                new SunkenSubmarineFeature.Config(
+                        submarines, SunkenSubmarineFeature.LOOT, SunkenSubmarineFeature.LOOT, false));
+        FeatureUtils.register(
+                context,
+                configuredKey(SUNKEN_SUBMARINE),
+                ModFeatures.SUNKEN_SUBMARINE,
+                new SunkenSubmarineFeature.Config(
+                        submarines, BuiltInLootTables.SHIPWRECK_TREASURE, BuiltInLootTables.SHIPWRECK_SUPPLY, true));
+    }
+
+    private static Holder<PlacedFeature> shrine(List<ResourceLocation> frames, BlockStateProvider pile) {
+        return PlacementUtils.inlinePlaced(
+                ModFeatures.REEF_SHRINE, new ReefShrineFeature.Config(frames, Optional.of(pile)));
+    }
+
+    private static BlockStateProvider depot(Block block, @Nullable Block raw, OreKind ore) {
+        SimpleWeightedRandomList.Builder<BlockState> pile = SimpleWeightedRandomList.<BlockState>builder()
+                .add(block.defaultBlockState(), 30)
+                .add(ModBlocks.ore(Host.PEARLSTONE, ore).defaultBlockState(), raw == null ? 70 : 35);
+        if (raw != null) pile.add(raw.defaultBlockState(), 35);
+        return weighted(pile);
     }
 
     public static void placed(BootstapContext<PlacedFeature> context) {
@@ -389,6 +559,11 @@ public final class ModWorldgen {
         place(context, configured, FROST_CRYSTALS, scattered(6));
         place(context, configured, SNOW_PATCH, floor(40));
         place(context, configured, ICE_DUNGEON, scattered(DUNGEON_ATTEMPTS));
+        place(
+                context,
+                configured,
+                ICE_BUBBLE,
+                rare(24, HeightRangePlacement.uniform(VerticalAnchor.absolute(-48), VerticalAnchor.absolute(40))));
 
         place(
                 context,
@@ -452,6 +627,37 @@ public final class ModWorldgen {
         place(context, configured, SAND_PATCH, floor(30));
         place(context, configured, BURIED_RELIC, floor(8));
         place(context, configured, DESERT_DUNGEON, scattered(DUNGEON_ATTEMPTS));
+        place(
+                context,
+                configured,
+                PRISMARINE_GROTTO,
+                rare(60, HeightRangePlacement.uniform(VerticalAnchor.absolute(-40), VerticalAnchor.absolute(30))));
+        place(context, configured, ANT_BURROW, List.of(RarityFilter.onAverageOnceEvery(32)));
+
+        place(context, configured, PEARL_SAND_BLOB, scattered(10));
+        place(context, configured, SAND_BLOB, scattered(7));
+        place(context, configured, SANDSTONE_BLOB, scattered(8));
+        place(context, configured, CALCITE_BLOB, scattered(5));
+        place(context, configured, PRISMARINE_BLOB, scattered(4));
+        place(context, configured, COBBLESTONE_ROCKS, waterFloor(7));
+        place(context, configured, SANDSTONE_ROCKS, waterFloor(7));
+        place(context, configured, REEF_PATCHES, waterFloor(100));
+        PlacementUtils.register(
+                context,
+                placedKey(REEF_CEILING_PATCHES),
+                configured.getOrThrow(configuredKey(REEF_PATCHES)),
+                waterCeiling(70, BlockPredicate.solid()));
+        place(context, configured, HANGING_CORAL, waterCeiling(30, CORAL_GROUND));
+        place(context, configured, REEF_GLOW_LICHEN, scattered(100));
+        PlacementUtils.register(
+                context,
+                placedKey(REEF_CORALS),
+                configured.getOrThrow(AquaticFeatures.WARM_OCEAN_VEGETATION),
+                waterFloor(60, CORAL_GROUND));
+        place(context, configured, REEF_CARPET, List.of());
+        place(context, configured, REEF_SHRINES, List.of(RarityFilter.onAverageOnceEvery(16)));
+        place(context, configured, LOST_SUBMARINE, List.of(RarityFilter.onAverageOnceEvery(40)));
+        place(context, configured, SUNKEN_SUBMARINE, List.of(RarityFilter.onAverageOnceEvery(250)));
     }
 
     public static void addIceCaves(BiomeGenerationSettings.Builder generation) {
@@ -461,14 +667,22 @@ public final class ModWorldgen {
                 GenerationStep.Decoration.UNDERGROUND_STRUCTURES,
                 ICE_FOSSIL_COAL,
                 ICE_FOSSIL_DIAMONDS,
+                ICE_BUBBLE,
                 ICE_DUNGEON);
         add(generation, GenerationStep.Decoration.UNDERGROUND_ORES, PACKED_ICE_POCKET, BLUE_ICE_POCKET);
         add(generation, GenerationStep.Decoration.UNDERGROUND_DECORATION, ICICLES, FROST_CRYSTALS, SNOW_PATCH);
     }
 
     public static void addUndergroundJungle(BiomeGenerationSettings.Builder generation) {
-        add(generation, GenerationStep.Decoration.LOCAL_MODIFICATIONS, ROOT_NET, JUNGLE_SHAFT);
-        add(generation, GenerationStep.Decoration.UNDERGROUND_STRUCTURES, GIANT_HIVE, SPIDER_NEST, JUNGLE_DUNGEON);
+        add(generation, GenerationStep.Decoration.LOCAL_MODIFICATIONS, ROOT_NET);
+        add(
+                generation,
+                GenerationStep.Decoration.UNDERGROUND_STRUCTURES,
+                GIANT_HIVE,
+                SPIDER_NEST,
+                JUNGLE_DUNGEON,
+                // jungle shaft is last cuz it cuts through hives and nests
+                JUNGLE_SHAFT);
         add(generation, GenerationStep.Decoration.UNDERGROUND_DECORATION, MUD_SPELEOTHEMS, MOSS_COAT);
         add(
                 generation,
@@ -496,7 +710,9 @@ public final class ModWorldgen {
                 FOSSIL_COAL,
                 FOSSIL_DIAMONDS,
                 RIB_CAGE,
-                DESERT_DUNGEON);
+                PRISMARINE_GROTTO,
+                DESERT_DUNGEON,
+                ANT_BURROW);
         add(generation, GenerationStep.Decoration.UNDERGROUND_ORES, SAND_POCKET);
         add(
                 generation,
@@ -504,6 +720,32 @@ public final class ModWorldgen {
                 SANDSTONE_SPELEOTHEMS,
                 SAND_PATCH,
                 BURIED_RELIC);
+    }
+
+    public static void addReef(BiomeGenerationSettings.Builder generation) {
+        add(
+                generation,
+                GenerationStep.Decoration.UNDERGROUND_STRUCTURES,
+                REEF_SHRINES,
+                LOST_SUBMARINE,
+                SUNKEN_SUBMARINE);
+        add(
+                generation,
+                GenerationStep.Decoration.UNDERGROUND_ORES,
+                PEARL_SAND_BLOB,
+                SAND_BLOB,
+                SANDSTONE_BLOB,
+                CALCITE_BLOB,
+                PRISMARINE_BLOB);
+        add(
+                generation,
+                GenerationStep.Decoration.UNDERGROUND_DECORATION,
+                COBBLESTONE_ROCKS,
+                SANDSTONE_ROCKS,
+                REEF_PATCHES,
+                REEF_CEILING_PATCHES,
+                HANGING_CORAL);
+        add(generation, GenerationStep.Decoration.VEGETAL_DECORATION, REEF_GLOW_LICHEN, REEF_CORALS, REEF_CARPET);
     }
 
     private static void add(
@@ -546,13 +788,28 @@ public final class ModWorldgen {
     }
 
     private static List<PlacementModifier> waterFloor(int count) {
+        return waterFloor(count, FLOOR);
+    }
+
+    private static List<PlacementModifier> waterFloor(int count, BlockPredicate floor) {
         return List.of(
                 CountPlacement.of(count),
                 InSquarePlacement.spread(),
                 RANGE,
                 EnvironmentScanPlacement.scanningFor(
-                        Direction.DOWN, FLOOR, BlockPredicate.matchesFluids(Fluids.WATER), 16),
+                        Direction.DOWN, floor, BlockPredicate.matchesFluids(Fluids.WATER), 16),
                 RandomOffsetPlacement.vertical(ConstantInt.of(1)),
+                BiomeFilter.biome());
+    }
+
+    private static List<PlacementModifier> waterCeiling(int count, BlockPredicate ceiling) {
+        return List.of(
+                CountPlacement.of(count),
+                InSquarePlacement.spread(),
+                RANGE,
+                EnvironmentScanPlacement.scanningFor(
+                        Direction.UP, ceiling, BlockPredicate.matchesFluids(Fluids.WATER), 16),
+                RandomOffsetPlacement.vertical(ConstantInt.of(-1)),
                 BiomeFilter.biome());
     }
 
@@ -563,6 +820,19 @@ public final class ModWorldgen {
 
     private static OreConfiguration pocket(BlockState state, int size) {
         return new OreConfiguration(new TagMatchTest(BlockTags.BASE_STONE_OVERWORLD), state, size);
+    }
+
+    private static WeightedStateProvider oreRock(Host host) {
+        return weighted(SimpleWeightedRandomList.<BlockState>builder()
+                .add(host.block().defaultBlockState(), 20)
+                .add(ModBlocks.ore(host, OreKind.DIAMOND).defaultBlockState(), 10)
+                .add(ModBlocks.ore(host, OreKind.EMERALD).defaultBlockState(), 10)
+                .add(ModBlocks.ore(host, OreKind.REDSTONE).defaultBlockState(), 12)
+                .add(ModBlocks.ore(host, OreKind.LAPIS).defaultBlockState(), 12)
+                .add(ModBlocks.ore(host, OreKind.GOLD).defaultBlockState(), 12)
+                .add(ModBlocks.ore(host, OreKind.IRON).defaultBlockState(), 10)
+                .add(ModBlocks.ore(host, OreKind.COPPER).defaultBlockState(), 10)
+                .add(ModBlocks.ore(host, OreKind.COAL).defaultBlockState(), 4));
     }
 
     private static WeightedStateProvider weighted(SimpleWeightedRandomList.Builder<BlockState> list) {

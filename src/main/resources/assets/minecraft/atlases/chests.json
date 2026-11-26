@@ -1,0 +1,24 @@
+{
+  "sources": [
+    {
+      "type": "single",
+      "resource": "rives_underground_biomes:entity/desert_chest"
+    },
+    {
+      "type": "single",
+      "resource": "rives_underground_biomes:entity/jungle_chest"
+    },
+    {
+      "type": "single",
+      "resource": "rives_underground_biomes:entity/frost_chest"
+    },
+    {
+      "type": "single",
+      "resource": "rives_underground_biomes:entity/prismarine_chest"
+    },
+    {
+      "type": "single",
+      "resource": "rives_underground_biomes:entity/spider_chest"
+    }
+  ]
+}
