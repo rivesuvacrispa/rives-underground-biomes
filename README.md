@@ -1,0 +1,283 @@
+<h1 align="center"><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/logo.jpg" alt="alt text" width="600" height="600"></h1>
+<h1 align="center">Rives Underground Biomes&nbsp;</h1>
+<p>This mod's primary goal is to enhance caves under certain biomes, expanding them all the way down to bedrock. This merges surface and underground world together, creating seamless and unique experience.</p>
+<p>Currently, the mod gives these biomes their own underground version:</p>
+<ol>
+    <li>Jungle (#jungle, #is_jungle) - Underground Jungle</li>
+    <li>Desert (#desert, #is_desert) - Underground Desert</li>
+    <li>Cold biomes (#snowy, #is_snowy, #icy, #is_icy) - Ice Caves</li>
+    <li>Coral reefs (in the warm ocean) - Underground Reef</li>
+</ol>
+<p>Each underground biome features a set of these additions:</p>
+<ol>
+    <li>Converts stone and deepslate into meaningful alternatives, including all ore variants</li>
+    <li>Adds new monster or new zombie/skeleton variant</li>
+    <li>Replaces vanilla dungeon room with biome-themed alternative</li>
+    <li>Generates new unique structures</li>
+    <li>Brings up new decorative blocks</li>
+</ol>
+<p>You can inspect a list of all biomes' content down below:</p>
+<h2 align="center">Biomes List</h2>
+<details>
+<summary>Underground Reef:</summary>
+    <p><strong>Main Features:</strong></p>
+    <ul>
+        <li>Completely overhauled generation under warm ocean: coral reefs grow under its surface, forming multiple floors</li>
+        <li>Corals, seaweed, kelp, mineral formations and unique structures are scattered across all floors</li>
+        <li>Various ruins of ancient civilization can be found across underground reefs</li>
+        <li>Prismarine crystal ore forms in a pearlstone, and prismarine shards grow inside prismarine geodes</li>
+        <li>Tube corals connect floors, sucking water downstream or upstream</li>
+    </ul>
+    <table align="center">
+        <tbody>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/reef/reef.jpg" alt="Reef" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/reef/prismarine-crystal-ore.jpg" alt="Prismarine Crystal Ore" width="400" height="400"></td>
+        </tr>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/reef/big-reef-temple.jpg" alt="Big Reef Temple" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/reef/prismarine-geode.jpg" alt="Prismarine Geode" width="400" height="400"></td>
+        </tr>
+        </tbody>
+    </table>
+    <p><strong>New structures:</strong></p>
+    <ul>
+        <li>Pearlstone shrines and ruins with piles of valuable materials with monster spawners inside</li>
+        <li>Sunken submarine - a rare structure of someone's unfortunate fate</li>
+    </ul>
+    <p><strong>New blocks:</strong></p>
+    <ul>
+        <li>Pearlstone - replaces all stone and deepslate</li>
+        <li>Pearlstone Bricks - can be used to make stairs, slabs and walls</li>
+        <li>Smooth Pearlstone - can be used to make stairs, slabs and walls</li>
+        <li>Pearlstone Sand - can be found in patches in pearlstone</li>
+        <li>Budding Prismarine - like budding amethyst, but grows prismarine crystals. Can be found in prismarine geodes</li>
+        <li>Prismarine Crystal Ore - drops prismarine, generates naturally in the lower level of underground reef</li>
+    </ul>
+    <table align="center">
+        <tbody>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/reef/blocks.jpg" alt="Blocks" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/reef/big-reef-temple-2.jpg" alt="Big Reef Temple" width="400" height="400"></td>
+        </tr>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/reef/small-reef-temple.jpg" alt="Small Reef Temple" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/reef/sunken-submarine.jpg" alt="Prismarine Geode" width="400" height="400"></td>
+        </tr>
+        </tbody>
+    </table>
+</details>
+<details>
+<summary>Underground Jungle:</summary>
+    <p><strong>Main Features:</strong></p>
+    <ul>
+        <li>Small and giant jungle trees grow underground</li>
+        <li>A mesh of jungle wood roots have grown through all biome</li>
+        <li>Vines, moss and grass blocks occasionaly cover surfaces</li>
+        <li>A lot of vegetation growing on everything it can grow on</li>
+        <li>Flooded areas grow seagrass, pickles, kelp</li>
+    </ul>
+    <table align="center">
+        <tbody>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/jungle/roots-and-pond.jpg" alt="Roots and Pond" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/jungle/jungle-cave-ceiling.jpg" alt="Jungle Cave Ceiling" width="400" height="400"></td>
+        </tr>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/jungle/trees.jpg" alt="Jungle Trees" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/jungle/pond.jpg" alt="Pond" width="400" height="400"></td>
+        </tr>
+        </tbody>
+    </table>
+    <p><strong>New structures:</strong></p>
+    <ul>
+        <li>Jungle Dungeon Room - replaces vanilla dungeon rooms, features a unique jungle chest</li>
+        <li>Giant Hives - hollow bee hives that carry honey blocks and bees inside</li>
+        <li>Spider Nests - a small hollow filled with leaves and cobweb, features a unique spider chest</li>
+        <li>Jungle Shafts - occasionally connects jungle surface with its underground version</li>
+    </ul>
+    <p><strong>New mobs:</strong></p>
+    <ul>
+        <li>Jungle Slime - a spiked slime, hitting it would damage you back</li>
+        <li>Jungle Spider - its bite inflicts nausea, spawns inside spider nests</li>
+    </ul>
+    <p><strong>New blocks:</strong></p>
+    <ul>
+        <li>Glowing Mushrooms</li>
+        <li>Mud replaces all stone. Ore generated in mud can be mined with a shovel</li>
+        <li>Mudstone replaces all deepslate. Mudstone can be used as a&nbsp;convenient source of packed mud</li>
+        <li>Jungle Chest - generates inside jungle dungeon rooms. Cannot be crafted</li>
+    </ul>
+    <table align="center">
+        <tbody>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/jungle/jungle-shaft.jpg" alt="Jungle Shaft" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/jungle/bee-hive.jpg" alt="Bee Hive" width="400" height="400"></td>
+        </tr>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/jungle/jungle-dungeon.jpg" alt="Jungle Dungeon" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/jungle/spider-nest.jpg" alt="Spider Nest" width="400" height="400"></td>
+        </tr>
+        </tbody>
+    </table>
+</details>
+<details>
+<summary>Underground Desert:</summary>
+    <p><strong>Main Features:</strong></p>
+    <ul>
+        <li>An ant burrow funnel can be found on the surface that leads to a cave openings underground</li>
+        <li>Giant fossils with bone blocks are common here</li>
+        <li>Fragile anthills are scattered on the floor. Breaking them will spawn angry ants</li>
+        <li>Sandstone stalactites and stalagmites</li>
+        <li>Dry bushes all over the place</li>
+        <li>Beware of quicksand pools!</li>
+    </ul>
+    <table align="center">
+        <tbody>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/desert/ant-burrow.jpg" alt="Ant Burrow Funnel" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/desert/ants-and-anthills.jpg" alt="Ants And Anthills" width="400" height="400"></td>
+        </tr>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/desert/fossil.jpg" alt="Giant Fossil" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/desert/sandstone-ores.jpg" alt="Sandstone Ores" width="400" height="400"></td>
+        </tr>
+        </tbody>
+    </table>
+    <p><strong>New structures:</strong></p>
+    <ul>
+        <li>Desert Dungeon Room - replaces vanilla dungeon rooms, features a unique desert chest</li>
+        <li>Giant Fossils - various shapes of ancient creatures' skeletons made out of bone blocks and rarely embed diamonds in them</li>
+        <li>Prismarine Geode - a rare, blooming flooded grotto that features prismarine geode on its floor</li>
+        <li>Ancient Library - a rare structure</li>
+        <li>Ancient Observatory - a very rare structure</li>
+    </ul>
+    <p><strong>New mobs:</strong></p>
+    <ul>
+        <li>Ant - acts like silverfish, only spawns when breaking anthills</li>
+        <li>Mummy Skeleton - a desert variation of a common skeleton</li>
+    </ul>
+    <p><strong>New blocks:</strong></p>
+    <ul>
+        <li>Anthill - very fragile, spawns ants when breaks</li>
+        <li>Sandstone replaces all stone</li>
+        <li>Sandslate replaces all deepslate</li>
+        <li>Desert Chest - generates inside desert dungeon rooms and new dungeons. Cannot be crafted</li>
+    </ul>
+    <table align="center">
+        <tbody>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/desert/desert-dungeon.jpg" alt="Desert Dungeon" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/desert/prismarine-geode.jpg" alt="Prismarine Geode" width="400" height="400"></td>
+        </tr>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/desert/ancient-library.jpg" alt="Ancient Library" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/desert/ancient-observatory.jpg" alt="Ancient Observatory" width="400" height="400"></td>
+        </tr>
+        </tbody>
+    </table>
+</details>
+<details>
+<summary>Ice Caves:</summary>
+    <p><strong>Main Features:</strong></p>
+    <ul>
+        <li>Frosted caves, covered with snow, ice and icicles</li>
+        <li>Ice blockages with thin ice that breaks easily</li>
+        <li>Giant fossils with bone blocks are common here</li>
+        <li>Pools of frozen lakes</li>
+        <li>Pools of powdered snow</li>
+    </ul>
+    <table align="center">
+        <tbody>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/ice/ice-blockage.jpg" alt="Ice Blockage" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/ice/ice-caves.jpg" alt="Ice Caves" width="400" height="400"></td>
+        </tr>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/ice/ice-pools.jpg" alt="Ice Pools" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/ice/snow-pools.jpg" alt="Snow Pools" width="400" height="400"></td>
+        </tr>
+        </tbody>
+    </table>
+    <p><strong>New structures:</strong></p>
+    <ul>
+        <li>Ice Bubbles with hot water inside are scattered around. In some you even may find a prismarine chest</li>
+        <li>Giant Fossils - various shapes of ancient creatures' skeletons made out of bone blocks and rarely embed diamonds in them</li>
+        <li>Ice Dungeon Room - replaces vanilla dungeon rooms, features a unique frost chest</li>
+    </ul>
+    <p><strong>New mobs:</strong></p>
+    <ul>
+        <li>Frozen - frosted variation of a common zombie</li>
+        <li>Strays replaces common skeletons</li>
+    </ul>
+    <p><strong>New blocks:</strong></p>
+    <ul>
+        <li>Permafrost replaces all stone</li>
+        <li>Glacislate replaces all deepslate</li>
+        <li>Permafrost bricks - crafted from permafrost, can be used to make stairs, slabs and walls</li>
+        <li>Frost crystals - grow on all surfaces, drops ice</li>
+        <li>Ice chest - generates inside ice dungeon rooms. Cannot be crafted</li>
+    </ul>
+    <table align="center">
+        <tbody>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/ice/ice-bubble.jpg" alt="Ice Bubble" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/ice/ice-dungeon.jpg" alt="Ice Dungeon" width="400" height="400"></td>
+        </tr>
+        <tr>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/ice/fossil.jpg" alt="Fossil" width="400" height="400"></td>
+            <td><img src="https://raw.githubusercontent.com/rivesuvacrispa/rives-underground-biomes/refs/heads/fabric/1.20.1/readme/pics/ice/blocks.jpg" alt="Blocks" width="400" height="400"></td>
+        </tr>
+        </tbody>
+    </table>
+</details>
+<h2 align="center">Versioning</h2>
+<table width="100%">
+    <tbody>
+    <tr>
+        <td width="19%">&nbsp;</td>
+        <td align="center" width="27%">Forge</td>
+        <td align="center" width="23.4019%">Neoforge</td>
+        <td align="center" width="24.5981%">Fabric</td>
+    </tr>
+    <tr>
+        <td align="right" width="19%">1.20.1</td>
+        <td align="center" width="27%">TODO</td>
+        <td align="center" width="23.4019%">TODO</td>
+        <td align="center" width="24.5981%">1.7.0-alpha</td>
+    </tr>
+    <tr>
+        <td align="right" width="19%">1.21.1</td>
+        <td align="center" width="27%">Not planned</td>
+        <td align="center" width="23.4019%">TODO</td>
+        <td align="center" width="24.5981%">TODO</td>
+    </tr>
+    <tr>
+        <td align="right" width="19%">26.1</td>
+        <td align="center" width="27%">Not planned</td>
+        <td align="center" width="23.4019%">TODO</td>
+        <td align="center" width="24.5981%">TODO</td>
+    </tr>
+    </tbody>
+</table>
+<h2 align="center">Compatibility</h2>
+<p>This project maintains compatibility with most of many popular modern worldgen mods:</p>
+<ul>
+    <li>TerraBlender</li>
+    <li>Biomes O' Plenty</li>
+    <li>Oh The Biomes We've Gone</li>
+    <li>Nature's Spirit</li>
+    <li>Regions Unexplored</li>
+    <li>Terralith: by default, underground biomes rewrite Terralith ones, but this is configurable with built-in datapack</li>
+    <li>YUNG's Cave Biomes: by default, underground biomes rewrite YUNG's ones, but this is configurable with built-in datapack</li>
+    <li>Tectonic</li>
+    <li>Lithostitched</li>
+    <li>William Wythers' Overhauled Overworld</li>
+    <li>Alex's Caves</li>
+    <li>Galosphere</li>
+    <li>Wilder Wild</li>
+    <li>Spelunkery</li>
+</ul>
+<h2 align="center">Issues</h2>
+<p>You can open an issue on project's <a href="https://github.com/rivesuvacrispa/rives-underground-biomes/issues">GitHub's Issue tracker</a></p>
+<p>Make sure to include mod version, minecraft version and mod loader type when doing so.</p>
