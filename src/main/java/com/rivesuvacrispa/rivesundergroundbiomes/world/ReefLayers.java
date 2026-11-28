@@ -9,6 +9,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -96,6 +97,11 @@ public final class ReefLayers {
     // funnel widening at the sea floor + the rock seal around it
     private static final double HOLE_FLARE = 1.5;
     private static final double HOLE_SEAL = 2;
+    // the layers follow the sea floor at most this far below the median floor around
+    // so a wide canyon cuts through them instead of pressing them down
+    private static final int MAX_BEND = 1;
+    // in chunk corners
+    private static final int BEND_RADIUS = 3;
 
     private static final long DRIFT_SALT = 0x5EEF_0001L;
     private static final long THICKNESS_SALT = 0x5EEF_0002L;
@@ -109,6 +115,7 @@ public final class ReefLayers {
     private static final BlockState WATER = Blocks.WATER.defaultBlockState();
     private static final BlockState STONE = Blocks.STONE.defaultBlockState();
     private static final BlockState DEEPSLATE = Blocks.DEEPSLATE.defaultBlockState();
+    private static final BlockState SANDSTONE = Blocks.SANDSTONE.defaultBlockState();
     private static final List<BlockState> CORALS = List.of(
             Blocks.TUBE_CORAL_BLOCK.defaultBlockState(),
             Blocks.BRAIN_CORAL_BLOCK.defaultBlockState(),
@@ -181,6 +188,10 @@ public final class ReefLayers {
         WorldCache cache = CACHES.computeIfAbsent(randomState, state -> new WorldCache());
         ReefLayers layers = new ReefLayers(chunk, seed, generator, randomState, cache);
         if (!layers.findReef(generator.getBiomeSource(), randomState.sampler())) return;
+        region.registryAccess()
+                .registryOrThrow(Registries.BIOME)
+                .getHolder(Zone.REEF.biome)
+                .ifPresent(layers::alignBiome);
         layers.avoidStructures(region);
         layers.fill();
     }
@@ -240,6 +251,22 @@ public final class ReefLayers {
             column[iy] = isReef(source.getNoiseBiome(qx, qy, qz, sampler));
         }
         return column;
+    }
+
+    // tectonic deep oceans put ocean floor far below Y=45
+    // and top reef layer was bare
+    // now the biome source starts the reef on the depth noise
+    private void alignBiome(Holder<Biome> reefBiome) {
+        chunk.fillBiomesFromNoise(
+                (qx, qy, qz, sampler) -> {
+                    Holder<Biome> biome = chunk.getNoiseBiome(qx, qy, qz);
+                    int x = QuartPos.toBlock(qx) + 2;
+                    int z = QuartPos.toBlock(qz) + 2;
+                    return QuartPos.toBlock(qy) < layerFloorAt(x, z) - ROOF && Zone.ofSurface(biome) == Zone.REEF
+                            ? reefBiome
+                            : biome;
+                },
+                randomState.sampler());
     }
 
     private void avoidStructures(WorldGenRegion region) {
@@ -316,6 +343,8 @@ public final class ReefLayers {
         double[] holeRadius = new double[256];
         int[] holeBottom = new int[256];
         int[] holeTop = new int[256];
+        int[] canyonBottom = new int[256];
+        int[] columnTop = new int[256];
         float[] caveColumn = new float[nodesY];
         int highest = minY - 1;
         for (int lz = 0; lz < 16; lz++) {
@@ -324,11 +353,17 @@ public final class ReefLayers {
                 int x = minX + lx;
                 int z = minZ + lz;
                 double floor = floorAt(x, z);
+                double layerFloor = layerFloorAt(x, z);
                 fillTop[column] = Mth.floor(floor) - FILL_BELOW_FLOOR;
-                // the real floor after the carvers, canyons deeper than the fill line ignored
+                // the real floor after the carvers
                 int realFloor = chunk.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, lx, lz) + 1;
-                double roofBottom = Math.max(Math.min(realFloor, floor), fillTop[column]) - MIN_ROOF;
-                highest = Math.max(highest, fillTop[column]);
+                // sea water below the fill line is a canyon that stays and cuts the layers
+                // anything else down there is filled
+                canyonBottom[column] = realFloor <= fillTop[column] && seaDown(lx, lz, realFloor, fillTop[column])
+                        ? realFloor
+                        : Integer.MAX_VALUE;
+                double roofBottom =
+                        Math.max(Math.min(realFloor, floor), Mth.floor(layerFloor) - FILL_BELOW_FLOOR) - MIN_ROOF;
                 double gx = (x - nodeX0 * CELL) / (double) CELL;
                 double gz = (z - nodeZ0 * CELL) / (double) CELL;
                 for (int iy = 0; iy < nodesY; iy++) {
@@ -336,9 +371,12 @@ public final class ReefLayers {
                     caveColumn[iy] = bilerp(cave, gx, iy, gz);
                 }
                 int offset = column * maxLayers;
-                layers(x, z, floor, roofBottom, caveColumn, bottoms, tops, offset, maxLayers);
+                layers(x, z, layerFloor, roofBottom, caveColumn, bottoms, tops, offset, maxLayers);
                 columnTubes[column] =
                         tubes.stream().filter(tube -> tube.reaches(x, z)).toArray(ReefTube[]::new);
+                // one above layer 0 for the support of sand that a canyon floor leaves over it
+                columnTop[column] =
+                        Math.max(fillTop[column], Double.isNaN(tops[offset]) ? minY : Mth.ceil(tops[offset])) + 1;
 
                 holeDistance[column] = Double.NaN;
                 // only above an open first layer since elsewhere the hole would end in rock
@@ -350,13 +388,15 @@ public final class ReefLayers {
                         holeRadius[column] = hole.radius();
                         holeBottom[column] = Mth.floor(tops[offset]);
                         holeTop[column] = realFloor - 1;
-                        highest = Math.max(highest, holeTop[column]);
+                        columnTop[column] = Math.max(columnTop[column], holeTop[column]);
                     }
                 }
+                highest = Math.max(highest, columnTop[column]);
             }
         }
 
         boolean changed = false;
+        boolean[] watered = new boolean[256];
         for (int sectionY = SectionPos.blockToSectionCoord(minY);
                 sectionY <= SectionPos.blockToSectionCoord(highest);
                 sectionY++) {
@@ -370,21 +410,25 @@ public final class ReefLayers {
                         int x = minX + lx;
                         int z = minZ + lz;
                         boolean hole = !Double.isNaN(holeDistance[column]);
-                        int top = Math.min(Math.max(fillTop[column], hole ? holeTop[column] : minY), baseY + 15);
+                        int top = Math.min(columnTop[column], baseY + 15);
                         for (int y = baseY; y <= top; y++) {
                             BlockState state = section.getBlockState(lx, y & 15, lz);
                             if (state.is(Blocks.BEDROCK)) continue;
                             double holeReach = hole ? holeReach(column, y, holeRadius, holeBottom, holeTop) : -1;
                             BlockState placed;
-                            if (inCave(y, bottoms, tops, column * maxLayers, maxLayers)
+                            boolean water = inCave(y, bottoms, tops, column * maxLayers, maxLayers)
                                     || inTube(columnTubes[column], x, y, z)
-                                    || hole && y >= holeBottom[column] && holeDistance[column] <= holeReach) {
+                                    || hole && y >= holeBottom[column] && holeDistance[column] <= holeReach;
+                            if (water) {
                                 placed = state == WATER ? null : WATER;
+                            } else if (watered[column] && state.getBlock() instanceof FallingBlock) {
+                                placed = state.is(BlockTags.SAND) ? SANDSTONE : solidAt(x, y, z);
                             } else {
                                 placed = tubeWall(columnTubes[column], x, y, z);
                                 if (placed == null && isOpen(state)) {
-                                    boolean filled =
-                                            y <= fillTop[column] && fills(lerpY(solidColumn, column, y), x, y, z);
+                                    boolean filled = y <= fillTop[column]
+                                            && y < canyonBottom[column]
+                                            && fills(lerpY(solidColumn, column, y), x, y, z);
                                     // the band between the fill line and the sea floor around a blue hole
                                     boolean sealed = hole && holeDistance[column] <= holeReach + HOLE_SEAL;
                                     if (filled || sealed) placed = solidAt(x, y, z);
@@ -394,6 +438,7 @@ public final class ReefLayers {
                                 section.setBlockState(lx, y & 15, lz, placed, false);
                                 changed = true;
                             }
+                            watered[column] = water;
                         }
                     }
                 }
@@ -412,6 +457,14 @@ public final class ReefLayers {
     // sand and gravel floors of old caves would fall into the layers
     private static boolean isOpen(BlockState state) {
         return state.isAir() || !state.getFluidState().isEmpty() || state.getBlock() instanceof FallingBlock;
+    }
+
+    private boolean seaDown(int lx, int lz, int bottom, int top) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(minX + lx, bottom, minZ + lz);
+        for (int y = bottom; y <= top; y++) {
+            if (chunk.getBlockState(pos.setY(y)) != WATER) return false;
+        }
+        return true;
     }
 
     private static double holeReach(int column, int y, double[] radius, int[] bottom, int[] top) {
@@ -485,7 +538,7 @@ public final class ReefLayers {
                     RandomSource random = cellRandom(TUBE_SALT, cellX, cellZ, k);
                     int ax = cellX * TUBE_CELL + TUBE_MARGIN + random.nextInt(TUBE_CELL - 2 * TUBE_MARGIN);
                     int az = cellZ * TUBE_CELL + TUBE_MARGIN + random.nextInt(TUBE_CELL - 2 * TUBE_MARGIN);
-                    double floor = floorAt(ax, az);
+                    double floor = layerFloorAt(ax, az);
                     if (floor - ROOF - (k + 1) * PERIOD < minY + BEDROCK_CLEARANCE) break;
                     if (random.nextFloat() >= TUBE_CHANCE) continue;
                     if (ax < minX - TUBE_REACH || ax > minX + 15 + TUBE_REACH) continue;
@@ -586,31 +639,39 @@ public final class ReefLayers {
         return true;
     }
 
-    // the noise only floor ignores carvers so a canyon does not drag the layers down
     private double floorAt(int x, int z) {
+        return lerpCorners(x, z, false);
+    }
+
+    private double layerFloorAt(int x, int z) {
+        return lerpCorners(x, z, true);
+    }
+
+    private double lerpCorners(int x, int z, boolean layer) {
         int cx = SectionPos.blockToSectionCoord(x);
         int cz = SectionPos.blockToSectionCoord(z);
-        LevelHeightAccessor height = chunk.getHeightAccessorForGeneration();
         return Mth.lerp2(
                 (x & 15) / 16.0,
                 (z & 15) / 16.0,
-                cache.floor(cx, cz, generator, height, randomState),
-                cache.floor(cx + 1, cz, generator, height, randomState),
-                cache.floor(cx, cz + 1, generator, height, randomState),
-                cache.floor(cx + 1, cz + 1, generator, height, randomState));
+                corner(cx, cz, layer),
+                corner(cx + 1, cz, layer),
+                corner(cx, cz + 1, layer),
+                corner(cx + 1, cz + 1, layer));
+    }
+
+    private int corner(int cx, int cz, boolean layer) {
+        LevelHeightAccessor height = chunk.getHeightAccessorForGeneration();
+        return layer
+                ? cache.layerFloor(cx, cz, generator, height, randomState)
+                : cache.floor(cx, cz, generator, height, randomState);
     }
 
     private double maxCornerFloor() {
         int cx = chunk.getPos().x;
         int cz = chunk.getPos().z;
-        LevelHeightAccessor height = chunk.getHeightAccessorForGeneration();
         return Math.max(
-                Math.max(
-                        cache.floor(cx, cz, generator, height, randomState),
-                        cache.floor(cx + 1, cz, generator, height, randomState)),
-                Math.max(
-                        cache.floor(cx, cz + 1, generator, height, randomState),
-                        cache.floor(cx + 1, cz + 1, generator, height, randomState)));
+                Math.max(corner(cx, cz, true), corner(cx + 1, cz, true)),
+                Math.max(corner(cx, cz + 1, true), corner(cx + 1, cz + 1, true)));
     }
 
     private static BlockState solidAt(int x, int y, int z) {
@@ -694,6 +755,7 @@ public final class ReefLayers {
     private static final class WorldCache {
         private final ConcurrentHashMap<Long, boolean[]> columns = new ConcurrentHashMap<>();
         private final ConcurrentHashMap<Long, Integer> floors = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<Long, Integer> layerFloors = new ConcurrentHashMap<>();
 
         boolean[] column(long key, Supplier<boolean[]> sample) {
             if (columns.size() > CACHE_LIMIT) columns.clear();
@@ -710,6 +772,27 @@ public final class ReefLayers {
                             Heightmap.Types.OCEAN_FLOOR_WG,
                             height,
                             randomState));
+        }
+
+        // the median of the floors around
+        // land counted at sea level so coasts does not raise it
+        int layerFloor(int cx, int cz, ChunkGenerator generator, LevelHeightAccessor height, RandomState randomState) {
+            long key = ChunkPos.asLong(cx, cz);
+            Integer cached = layerFloors.get(key);
+            if (cached != null) return cached;
+            int[] around = new int[(2 * BEND_RADIUS + 1) * (2 * BEND_RADIUS + 1)];
+            int i = 0;
+            for (int dx = -BEND_RADIUS; dx <= BEND_RADIUS; dx++) {
+                for (int dz = -BEND_RADIUS; dz <= BEND_RADIUS; dz++) {
+                    around[i++] =
+                            Math.min(floor(cx + dx, cz + dz, generator, height, randomState), generator.getSeaLevel());
+                }
+            }
+            Arrays.sort(around);
+            int floor = Math.max(floor(cx, cz, generator, height, randomState), around[around.length / 2] - MAX_BEND);
+            if (layerFloors.size() > CACHE_LIMIT) layerFloors.clear();
+            layerFloors.putIfAbsent(key, floor);
+            return floor;
         }
     }
 }

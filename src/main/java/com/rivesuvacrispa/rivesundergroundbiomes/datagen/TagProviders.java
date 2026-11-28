@@ -252,7 +252,9 @@ public final class TagProviders {
                     .addOptional(new ResourceLocation("natures_spirit", "snowy_redwood_forest"));
             getOrCreateTagBuilder(Zone.REEF.surfaceTag).add(net.minecraft.world.level.biome.Biomes.WARM_OCEAN);
             getOrCreateTagBuilder(ModBiomeTags.NO_UNDERGROUND_ZONE)
-                    .addOptional(new ResourceLocation("natures_spirit", "snowcapped_red_peaks"));
+                    .addOptional(new ResourceLocation("natures_spirit", "snowcapped_red_peaks"))
+                    .addOptionalTag(c(Registries.BIOME, "caves"))
+                    .addOptionalTag(forge(Registries.BIOME, "is_underground"));
 
             getOrCreateTagBuilder(ModBiomeTags.REPLACEABLE_CAVES)
                     .add(

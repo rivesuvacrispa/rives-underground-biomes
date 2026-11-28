@@ -38,7 +38,7 @@ public class AncientRuinFeature extends TemplateFeature<AncientRuinFeature.Confi
                         ResourceLocation.CODEC.fieldOf("chests").forGetter(Config::chests),
                         ResourceLocation.CODEC.fieldOf("hidden_chests").forGetter(Config::hiddenChests),
                         Codec.BOOL.fieldOf("buried").forGetter(Config::buried),
-                        Codec.intRange(0, 16).fieldOf("spacingChunks").forGetter(Config::spacingChunks))
+                        Codec.intRange(0, 16).fieldOf("spacing").forGetter(Config::spacingChunks))
                 .apply(instance, Config::new));
     }
 

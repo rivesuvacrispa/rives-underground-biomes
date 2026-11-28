@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.rivesuvacrispa.rivesundergroundbiomes.ModBlocks;
 import com.rivesuvacrispa.rivesundergroundbiomes.ModEntities;
+import com.rivesuvacrispa.rivesundergroundbiomes.RivesUndergroundBiomes;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.Host;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.OreKind;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.SpeleothemBlock;
@@ -30,8 +31,9 @@ import net.minecraft.world.level.block.Blocks;
 import java.util.Optional;
 
 public class ModelProvider extends FabricModelProvider {
+    // our own copy of the vanilla chest item model, mods like Enhanced Block Entities replace that one
     private static final ModelTemplate CHEST_ITEM = new ModelTemplate(
-            Optional.of(new ResourceLocation("minecraft", "item/chest")), Optional.empty(), TextureSlot.PARTICLE);
+            Optional.of(RivesUndergroundBiomes.id("item/template_chest")), Optional.empty(), TextureSlot.PARTICLE);
     private static final ModelTemplate SPELEOTHEM = new ModelTemplate(
             Optional.of(new ResourceLocation("minecraft", "block/pointed_dripstone")),
             Optional.empty(),
