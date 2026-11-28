@@ -1,5 +1,7 @@
 package com.rivesuvacrispa.rivesundergroundbiomes.datagen;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.rivesuvacrispa.rivesundergroundbiomes.ModBlocks;
 import com.rivesuvacrispa.rivesundergroundbiomes.ModEntities;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.Host;
@@ -7,6 +9,7 @@ import com.rivesuvacrispa.rivesundergroundbiomes.block.OreKind;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.SpeleothemBlock;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricModelProvider;
+import net.minecraft.core.Direction;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.data.models.BlockModelGenerators;
 import net.minecraft.data.models.ItemModelGenerators;
@@ -77,12 +80,10 @@ public class ModelProvider extends FabricModelProvider {
         }
 
         ModBlocks.speleothems().forEach(block -> speleothem(generators, block));
-        ResourceLocation crystal = ModelTemplates.CROSS.create(
-                ModBlocks.FROST_CRYSTAL, TextureMapping.cross(ModBlocks.FROST_CRYSTAL), generators.modelOutput);
-        generators.blockStateOutput.accept(MultiVariantGenerator.multiVariant(
-                        ModBlocks.FROST_CRYSTAL, Variant.variant().with(VariantProperties.MODEL, crystal))
-                .with(generators.createColumnWithFacing()));
-        generators.createSimpleFlatItemModel(ModBlocks.FROST_CRYSTAL);
+        crystal(generators, ModBlocks.FROST_CRYSTAL);
+        ModBlocks.prismarineBuds().forEach(block -> crystal(generators, block));
+        generators.createTrivialCube(ModBlocks.BUDDING_PRISMARINE);
+        glowingCube(generators, ModBlocks.PRISMARINE_CRYSTAL_ORE);
         generators.createCrossBlockWithDefaultItem(ModBlocks.GLOWSHROOM, BlockModelGenerators.TintState.NOT_TINTED);
         generators.createCrossBlock(ModBlocks.ANTHILL, BlockModelGenerators.TintState.NOT_TINTED);
         vanillaTextured(generators, ModBlocks.QUICKSAND, "sand");
@@ -92,6 +93,54 @@ public class ModelProvider extends FabricModelProvider {
         chest(generators, ModBlocks.FROST_CHEST, ModBlocks.PERMAFROST_BRICKS);
         chest(generators, ModBlocks.PRISMARINE_CHEST, Blocks.PRISMARINE_BRICKS);
         chest(generators, ModBlocks.SPIDER_CHEST, Blocks.OAK_PLANKS);
+    }
+
+    private static void crystal(BlockModelGenerators generators, Block block) {
+        ResourceLocation model =
+                ModelTemplates.CROSS.create(block, TextureMapping.cross(block), generators.modelOutput);
+        generators.blockStateOutput.accept(
+                MultiVariantGenerator.multiVariant(block, Variant.variant().with(VariantProperties.MODEL, model))
+                        .with(generators.createColumnWithFacing()));
+        generators.createSimpleFlatItemModel(block);
+    }
+
+    private static void glowingCube(BlockModelGenerators generators, Block block) {
+        JsonObject textures = new JsonObject();
+        textures.addProperty("particle", TextureMapping.getBlockTexture(block).toString());
+        textures.addProperty("base", TextureMapping.getBlockTexture(block).toString());
+        textures.addProperty(
+                "glow", TextureMapping.getBlockTexture(block, "_emissive").toString());
+        JsonArray elements = new JsonArray();
+        elements.add(cube("#base"));
+        elements.add(cube("#glow"));
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", "minecraft:block/block");
+        model.add("textures", textures);
+        model.add("elements", elements);
+        ResourceLocation location = ModelLocationUtils.getModelLocation(block);
+        generators.modelOutput.accept(location, () -> model);
+        generators.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block, location));
+    }
+
+    private static JsonObject cube(String texture) {
+        JsonObject faces = new JsonObject();
+        for (Direction direction : Direction.values()) {
+            JsonObject face = new JsonObject();
+            face.addProperty("texture", texture);
+            face.addProperty("cullface", direction.getSerializedName());
+            faces.add(direction.getSerializedName(), face);
+        }
+        JsonObject element = new JsonObject();
+        element.add("from", corner(0));
+        element.add("to", corner(16));
+        element.add("faces", faces);
+        return element;
+    }
+
+    private static JsonArray corner(int value) {
+        JsonArray corner = new JsonArray();
+        for (int i = 0; i < 3; i++) corner.add(value);
+        return corner;
     }
 
     // particle only like the vanilla chest

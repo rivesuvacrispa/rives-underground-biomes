@@ -17,6 +17,10 @@ repositories {
     maven { url = 'https://api.modrinth.com/maven' }
 }
 
+configurations {
+    devMods { transitive = false }
+}
+
 fabricApi {
     configureDataGeneration()
 }
@@ -27,9 +31,15 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modLocalRuntime "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_runtime_version}"
-    modLocalRuntime "maven.modrinth:worldedit:${project.worldedit_runtime_version}"
     modCompileOnly "com.github.glitchfiend:TerraBlender-fabric:${project.minecraft_version}-${project.terrablender_version}"
+    devMods "maven.modrinth:worldedit:${project.worldedit_runtime_version}"
 }
+
+tasks.register('copyDevMods', Copy) {
+    from configurations.devMods
+    into 'run/mods'
+}
+['runClient', 'runServer', 'ideaSyncTask'].each { tasks.named(it) { dependsOn 'copyDevMods' } }
 
 processResources {
     inputs.property 'version', project.version

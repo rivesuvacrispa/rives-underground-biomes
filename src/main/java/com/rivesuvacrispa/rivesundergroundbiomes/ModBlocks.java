@@ -2,6 +2,8 @@ package com.rivesuvacrispa.rivesundergroundbiomes;
 
 import com.rivesuvacrispa.rivesundergroundbiomes.block.AnthillBlock;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.BiomeChestBlock;
+import com.rivesuvacrispa.rivesundergroundbiomes.block.BuddingPrismarineBlock;
+import com.rivesuvacrispa.rivesundergroundbiomes.block.GlowshroomItem;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.Host;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.ModBlockTags;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.OreKind;
@@ -14,6 +16,7 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SolidBucketItem;
@@ -57,6 +60,12 @@ public final class ModBlocks {
     public static Block SMOOTH_PEARLSTONE_STAIRS;
     public static Block SMOOTH_PEARLSTONE_SLAB;
     public static Block SMOOTH_PEARLSTONE_WALL;
+    public static Block BUDDING_PRISMARINE;
+    public static Block SMALL_PRISMARINE_BUD;
+    public static Block MEDIUM_PRISMARINE_BUD;
+    public static Block LARGE_PRISMARINE_BUD;
+    public static Block PRISMARINE_CLUSTER;
+    public static Block PRISMARINE_CRYSTAL_ORE;
     public static Block PERMAFROST_BRICKS;
     public static Block PERMAFROST_BRICK_STAIRS;
     public static Block PERMAFROST_BRICK_SLAB;
@@ -152,6 +161,20 @@ public final class ModBlocks {
             }
             ORES.put(host, ores);
         }
+        PRISMARINE_CRYSTAL_ORE = register(
+                "prismarine_crystal_ore",
+                new DropExperienceBlock(
+                        Properties.copy(ore(Host.PEARLSTONE, OreKind.LAPIS)).lightLevel(state -> 4),
+                        UniformInt.of(2, 5)));
+        BUDDING_PRISMARINE = register(
+                "budding_prismarine",
+                new BuddingPrismarineBlock(Properties.copy(Blocks.BUDDING_AMETHYST)
+                        .mapColor(MapColor.COLOR_CYAN)
+                        .sound(SoundType.STONE)));
+        PRISMARINE_CLUSTER = register("prismarine_cluster", new AmethystClusterBlock(7, 3, prismarineBud()));
+        LARGE_PRISMARINE_BUD = register("large_prismarine_bud", new AmethystClusterBlock(5, 3, prismarineBud()));
+        MEDIUM_PRISMARINE_BUD = register("medium_prismarine_bud", new AmethystClusterBlock(4, 3, prismarineBud()));
+        SMALL_PRISMARINE_BUD = register("small_prismarine_bud", new AmethystClusterBlock(3, 4, prismarineBud()));
 
         ICICLE = register(
                 "icicle",
@@ -176,7 +199,7 @@ public final class ModBlocks {
                                 .mapColor(MapColor.ICE)
                                 .strength(0.3F)
                                 .lightLevel(state -> 0)));
-        GLOWSHROOM = register(
+        GLOWSHROOM = registerBlock(
                 "glowshroom",
                 new SmallPlantBlock(
                         Properties.of()
@@ -190,6 +213,10 @@ public final class ModBlocks {
                                 .pushReaction(PushReaction.DESTROY),
                         Block.box(4, 0, 4, 12, 9, 12),
                         (ground, level) -> true));
+        ALL_ITEMS.add(Registry.register(
+                BuiltInRegistries.ITEM,
+                RivesUndergroundBiomes.id("glowshroom"),
+                new GlowshroomItem(GLOWSHROOM, new Item.Properties())));
         ANTHILL = registerBlock(
                 "anthill",
                 new AnthillBlock(
@@ -229,6 +256,16 @@ public final class ModBlocks {
 
     public static List<Block> chests() {
         return List.of(DESERT_CHEST, JUNGLE_CHEST, FROST_CHEST, PRISMARINE_CHEST, SPIDER_CHEST);
+    }
+
+    public static List<Block> prismarineBuds() {
+        return List.of(SMALL_PRISMARINE_BUD, MEDIUM_PRISMARINE_BUD, LARGE_PRISMARINE_BUD, PRISMARINE_CLUSTER);
+    }
+
+    private static Properties prismarineBud() {
+        return Properties.copy(Blocks.AMETHYST_CLUSTER)
+                .mapColor(MapColor.COLOR_CYAN)
+                .lightLevel(state -> 0);
     }
 
     private static Properties speleothem(MapColor color, SoundType sound, float hardness) {

@@ -11,27 +11,21 @@ import org.jetbrains.annotations.Nullable;
 
 // ordinal = index into the resolved biome arrays
 public enum Zone {
-    DESERT("underground_desert", null, "has_underground_desert", 0.2F),
-    JUNGLE("underground_jungle", null, "has_underground_jungle", 0.2F),
-    ICE("ice_caves", null, "has_ice_caves", 0.2F),
+    DESERT("underground_desert", "has_underground_desert", 0.2F),
+    JUNGLE("underground_jungle", "has_underground_jungle", 0.2F),
+    ICE("ice_caves", "has_ice_caves", 0.2F),
     // 0.2 = about 25 blocks below the surface
     // 0.117 = about 15 blocks where the reef layers start
-    REEF("underground_reef", "underground_ocean", "has_underground_reef", 0.117F);
+    REEF("underground_reef", "has_underground_reef", 0.117F);
 
     public static final Zone[] VALUES = values();
-    public static final int DEEP_BELOW_Y = 0;
 
     public final ResourceKey<Biome> biome;
-
-    @Nullable
-    public final ResourceKey<Biome> deepBiome;
-
     public final TagKey<Biome> surfaceTag;
     public final long startDepth;
 
-    Zone(String biome, @Nullable String deepBiome, String surfaceTag, float startDepth) {
+    Zone(String biome, String surfaceTag, float startDepth) {
         this.biome = key(biome);
-        this.deepBiome = deepBiome == null ? null : key(deepBiome);
         this.surfaceTag = TagKey.create(Registries.BIOME, RivesUndergroundBiomes.id(surfaceTag));
         this.startDepth = Climate.quantizeCoord(startDepth);
     }
@@ -41,7 +35,7 @@ public enum Zone {
     }
 
     public boolean isBiome(Holder<Biome> holder) {
-        return holder.is(biome) || deepBiome != null && holder.is(deepBiome);
+        return holder.is(biome);
     }
 
     @Nullable

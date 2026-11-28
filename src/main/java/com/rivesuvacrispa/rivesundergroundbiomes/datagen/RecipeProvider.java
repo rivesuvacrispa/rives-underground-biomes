@@ -1,6 +1,7 @@
 package com.rivesuvacrispa.rivesundergroundbiomes.datagen;
 
 import com.rivesuvacrispa.rivesundergroundbiomes.ModBlocks;
+import com.rivesuvacrispa.rivesundergroundbiomes.RivesUndergroundBiomes;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.Host;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.OreKind;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
@@ -8,6 +9,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -30,6 +32,11 @@ public class RecipeProvider extends FabricRecipeProvider {
         }
 
         oneToOneConversionRecipe(exporter, Items.SANDSTONE, ModBlocks.SANDSLATE, null, 2);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.DECORATIONS, Items.GLOW_ITEM_FRAME)
+                .requires(Items.ITEM_FRAME)
+                .requires(ModBlocks.GLOWSHROOM)
+                .unlockedBy(getHasName(ModBlocks.GLOWSHROOM), has(ModBlocks.GLOWSHROOM))
+                .save(exporter, RivesUndergroundBiomes.id("glow_item_frame_from_glowshroom"));
         oneToOneConversionRecipe(exporter, Items.PACKED_MUD, ModBlocks.MUDSTONE, null, 2);
         oneToOneConversionRecipe(exporter, ModBlocks.PERMAFROST, ModBlocks.GLACISLATE, null, 2);
         oreSmelting(

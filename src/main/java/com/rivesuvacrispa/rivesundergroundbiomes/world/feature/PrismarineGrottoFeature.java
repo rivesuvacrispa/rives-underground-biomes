@@ -1,6 +1,5 @@
 package com.rivesuvacrispa.rivesundergroundbiomes.world.feature;
 
-import com.rivesuvacrispa.rivesundergroundbiomes.world.Conversions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -25,8 +24,9 @@ public class PrismarineGrottoFeature extends Feature<NoneFeatureConfiguration> {
     private static final double EGG = 0.15;
     private static final int REACH = (int) HALF_LENGTH + 3;
     private static final int TOP = (int) Math.ceil(HALF_HEIGHT * (1 + EGG)) + 1;
-    private static final double GEODE_RADIUS = 5;
-    private static final double GEODE_HOLLOW = 2.6;
+    private static final double GEODE_CORE = 1.5;
+    private static final double GEODE_GAP = 2;
+    private static final double GEODE_RADIUS = GEODE_CORE + GEODE_GAP + PrismarineGeode.SHELL;
     private static final long SALT = 404;
     private static final float BURROW_CHANCE = 0.5F;
 
@@ -122,29 +122,14 @@ public class PrismarineGrottoFeature extends Feature<NoneFeatureConfiguration> {
     }
 
     private static void placeGeode(WorldGenLevel level, BlockPos geode, RandomSource random) {
-        int reach = (int) GEODE_RADIUS + 1;
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (int dx = -reach; dx <= reach; dx++) {
-            for (int dy = -reach; dy <= reach; dy++) {
-                for (int dz = -reach; dz <= reach; dz++) {
-                    double r = Math.sqrt(dx * dx + dy * dy + dz * dz) + (random.nextDouble() - 0.5) * 0.5;
-                    if (r > GEODE_RADIUS) continue;
-                    BlockState state = level.getBlockState(pos.setWithOffset(geode, dx, dy, dz));
-                    if (!Carving.canOverwrite(state)) continue;
-                    if (r <= GEODE_HOLLOW) {
-                        Carving.setWater(level, pos);
-                    } else if (!(isWater(state) && random.nextFloat() < 0.15F)) {
-                        Carving.set(level, pos, geodeLayer(r, random));
-                    }
-                }
-            }
-        }
+        PrismarineGeode.place(level, geode, GEODE_CORE, GEODE_GAP, false, random);
 
         double angle = random.nextDouble() * Math.PI * 2;
         double ux = Math.cos(angle) * 0.9;
         double uz = Math.sin(angle) * 0.9;
         double uy = 0.45;
-        for (double t = 0; t <= GEODE_RADIUS + 1; t += 0.5) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (double t = GEODE_CORE + GEODE_GAP; t <= GEODE_RADIUS + 1; t += 0.5) {
             double px = geode.getX() + 0.5 + ux * t;
             double py = geode.getY() + 0.5 + uy * t;
             double pz = geode.getZ() + 0.5 + uz * t;
@@ -152,23 +137,15 @@ public class PrismarineGrottoFeature extends Feature<NoneFeatureConfiguration> {
                 for (int y = (int) Math.floor(py) - 2; y <= (int) Math.floor(py) + 2; y++) {
                     for (int z = (int) Math.floor(pz) - 2; z <= (int) Math.floor(pz) + 2; z++) {
                         if (square(x + 0.5 - px) + square(y + 0.5 - py) + square(z + 0.5 - pz) > square(1.6)) continue;
-                        if (geode.distToCenterSqr(x + 0.5, y + 0.5, z + 0.5) > square(GEODE_RADIUS + 0.5)) continue;
+                        double distance = geode.distToCenterSqr(x + 0.5, y + 0.5, z + 0.5);
+                        if (distance <= square(GEODE_CORE + 0.5) || distance > square(GEODE_RADIUS + 0.5)) continue;
                         if (Carving.canOverwrite(level.getBlockState(pos.set(x, y, z)))) Carving.setWater(level, pos);
                     }
                 }
             }
         }
 
-        Carving.placeTreasureChest(level, geode.below(2), random);
-    }
-
-    private static BlockState geodeLayer(double r, RandomSource random) {
-        if (r <= 3.4)
-            return random.nextFloat() < 0.08F
-                    ? Blocks.SEA_LANTERN.defaultBlockState()
-                    : Blocks.PRISMARINE.defaultBlockState();
-        if (r <= 4.2) return Blocks.PRISMARINE_BRICKS.defaultBlockState();
-        return Blocks.DARK_PRISMARINE.defaultBlockState();
+        Carving.placeTreasureChest(level, geode.below((int) (GEODE_CORE + GEODE_GAP)), random);
     }
 
     // pos is the lowest water cell of a column
@@ -218,10 +195,6 @@ public class PrismarineGrottoFeature extends Feature<NoneFeatureConfiguration> {
             if (last) return;
             pos.move(Direction.DOWN);
         }
-    }
-
-    private static boolean isWater(BlockState state) {
-        return state.is(Blocks.WATER) || state == Conversions.WATER_MARKER;
     }
 
     private static double square(double value) {

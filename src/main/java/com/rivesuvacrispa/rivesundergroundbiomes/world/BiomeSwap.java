@@ -6,7 +6,6 @@ import com.rivesuvacrispa.rivesundergroundbiomes.mixin.HolderReferenceAccessor;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.QuartPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
@@ -57,13 +56,11 @@ public final class BiomeSwap {
                     "Overworld biome source without registry-backed biomes; underground biomes disabled for it");
             return DISABLED;
         }
-        Holder<Biome>[] ours = new Holder[Zone.VALUES.length * 2];
+        Holder<Biome>[] ours = new Holder[Zone.VALUES.length];
         for (Zone zone : Zone.VALUES) {
             Holder<Biome> biome = holder(getter, zone.biome);
-            Holder<Biome> deep = zone.deepBiome == null ? biome : holder(getter, zone.deepBiome);
-            if (biome == null || deep == null) return DISABLED;
-            ours[zone.ordinal() * 2] = biome;
-            ours[zone.ordinal() * 2 + 1] = deep;
+            if (biome == null) return DISABLED;
+            ours[zone.ordinal()] = biome;
         }
         return ours;
     }
@@ -107,8 +104,7 @@ public final class BiomeSwap {
             if (zone == null) return natural;
         }
         if (target.depth() < zone.startDepth) return natural;
-        boolean deep = QuartPos.toBlock(y) < Zone.DEEP_BELOW_Y;
-        return ours[zone.ordinal() * 2 + (deep ? 1 : 0)];
+        return ours[zone.ordinal()];
     }
 
     private static Zone neighbourZone(

@@ -51,7 +51,6 @@ public class BiomeProvider extends FabricDynamicRegistryProvider {
         context.register(Zone.JUNGLE.biome, undergroundJungle(context));
         context.register(Zone.ICE.biome, iceCaves(context));
         context.register(Zone.REEF.biome, reef(context, 0x2FC9E0, 0x062A3A));
-        context.register(Zone.REEF.deepBiome, reef(context, 0x2A78C8, 0x041A30));
     }
 
     private static Biome undergroundDesert(BootstapContext<Biome> context) {

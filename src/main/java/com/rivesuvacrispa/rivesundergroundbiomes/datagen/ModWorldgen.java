@@ -8,11 +8,13 @@ import com.rivesuvacrispa.rivesundergroundbiomes.block.Host;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.ModBlockTags;
 import com.rivesuvacrispa.rivesundergroundbiomes.block.OreKind;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.Zone;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.AncientRuinFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.AttachedBlockFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.DungeonFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.NoiseNetFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.ReefCarpetFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.ReefShrineFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.ReefTempleFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.RockFormationFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.SpeleothemFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.SunkenSubmarineFeature;
@@ -20,7 +22,6 @@ import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.SupportedBlobFeat
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.UnderwaterGardenFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.WaterCoatFeature;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
@@ -130,12 +131,14 @@ public final class ModWorldgen {
     static final String DESERT_DUNGEON = "desert_dungeon";
     static final String PRISMARINE_GROTTO = "prismarine_grotto";
     static final String ANT_BURROW = "ant_burrow";
-    // Underground Reef and Underground Ocean share these
+    static final String ANCIENT_LIBRARY = "ancient_library";
+    static final String ANCIENT_OBSERVATORY = "ancient_observatory";
     static final String PEARL_SAND_BLOB = "pearl_sand_blob";
     static final String SAND_BLOB = "reef_sand_blob";
     static final String SANDSTONE_BLOB = "reef_sandstone_blob";
     static final String CALCITE_BLOB = "reef_calcite_blob";
     static final String PRISMARINE_BLOB = "reef_prismarine_blob";
+    static final String PRISMARINE_CRYSTAL_ORE = "prismarine_crystal_ore";
     static final String REEF_PATCHES = "reef_patches";
     static final String HANGING_CORAL = "hanging_coral";
     static final String REEF_CORALS = "reef_corals";
@@ -143,12 +146,17 @@ public final class ModWorldgen {
     static final String REEF_CEILING_PATCHES = "reef_ceiling_patches";
     static final String REEF_GLOW_LICHEN = "reef_glow_lichen";
     static final String COBBLESTONE_ROCKS = "reef_cobblestone_rocks";
-    static final String SANDSTONE_ROCKS = "reef_sandstone_rocks";
+    static final String PEARLSTONE_ROCKS = "reef_pearlstone_rocks";
+    static final String REEF_GEODES = "reef_geodes";
     static final String REEF_SHRINES = "reef_shrines";
+    static final String REEF_TEMPLES = "reef_temples";
+    static final String GRAND_REEF_TEMPLE = "grand_reef_temple";
     static final String LOST_SUBMARINE = "lost_submarine";
     static final String SUNKEN_SUBMARINE = "sunken_submarine";
 
     private static final int DUNGEON_ATTEMPTS = 12;
+    private static final int LIBRARY_SPACING_CHUNKS = 4;
+    private static final int OBSERVATORY_SPACING_CHUNKS = 5;
     private static final PlacementModifier RANGE =
             HeightRangePlacement.uniform(VerticalAnchor.aboveBottom(6), VerticalAnchor.absolute(80));
     // no trees or plants on stalagmites
@@ -414,6 +422,26 @@ public final class ModWorldgen {
                         List.of(EntityType.HUSK, ModEntities.MUMMY_SKELETON)));
         FeatureUtils.register(context, configuredKey(PRISMARINE_GROTTO), ModFeatures.PRISMARINE_GROTTO);
         FeatureUtils.register(context, configuredKey(ANT_BURROW), ModFeatures.ANT_BURROW);
+        FeatureUtils.register(
+                context,
+                configuredKey(ANCIENT_LIBRARY),
+                ModFeatures.ANCIENT_RUIN,
+                new AncientRuinFeature.Config(
+                        List.of(RivesUndergroundBiomes.id("ancient_library")),
+                        AncientRuinFeature.LIBRARY,
+                        AncientRuinFeature.LIBRARY_HIDDEN,
+                        true,
+                        LIBRARY_SPACING_CHUNKS));
+        FeatureUtils.register(
+                context,
+                configuredKey(ANCIENT_OBSERVATORY),
+                ModFeatures.ANCIENT_RUIN,
+                new AncientRuinFeature.Config(
+                        List.of(RivesUndergroundBiomes.id("ancient_observatory")),
+                        AncientRuinFeature.OBSERVATORY,
+                        AncientRuinFeature.OBSERVATORY_HIDDEN,
+                        false,
+                        OBSERVATORY_SPACING_CHUNKS));
 
         FeatureUtils.register(
                 context,
@@ -457,6 +485,11 @@ public final class ModWorldgen {
         FeatureUtils.register(context, configuredKey(HANGING_CORAL), ModFeatures.HANGING_CORAL);
         FeatureUtils.register(
                 context,
+                configuredKey(PRISMARINE_CRYSTAL_ORE),
+                Feature.ORE,
+                pocket(ModBlocks.PRISMARINE_CRYSTAL_ORE.defaultBlockState(), 8));
+        FeatureUtils.register(
+                context,
                 configuredKey(REEF_CARPET),
                 ModFeatures.REEF_CARPET,
                 new ReefCarpetFeature.Config(0.47F, 0.2F, 0.3F, 0.02F, 0.15F));
@@ -488,29 +521,37 @@ public final class ModWorldgen {
                         .add(Blocks.MOSS_BLOCK.defaultBlockState(), 2))));
         FeatureUtils.register(
                 context,
-                configuredKey(SANDSTONE_ROCKS),
+                configuredKey(PEARLSTONE_ROCKS),
                 ModFeatures.ROCK_FORMATION,
-                new RockFormationFeature.Config(oreRock(Host.SANDSTONE)));
+                new RockFormationFeature.Config(pearlstoneRock()));
+        FeatureUtils.register(context, configuredKey(REEF_GEODES), ModFeatures.REEF_GEODE);
 
-        List<ResourceLocation> frames =
-                List.of(RivesUndergroundBiomes.id("pearl_shrine"), RivesUndergroundBiomes.id("prismarine_shrine"));
+        List<ResourceLocation> frames = List.of(RivesUndergroundBiomes.id("pearlstone_shrine"));
+        BlockStateProvider sponge = BlockStateProvider.simple(Blocks.WET_SPONGE);
+        BlockStateProvider gold = depot(Blocks.GOLD_BLOCK, Blocks.RAW_GOLD_BLOCK, OreKind.GOLD);
+        BlockStateProvider emerald = depot(Blocks.EMERALD_BLOCK, null, OreKind.EMERALD);
+        BlockStateProvider lapis = depot(Blocks.LAPIS_BLOCK, null, OreKind.LAPIS);
+        List<BlockStateProvider> piles = List.of(sponge, gold, emerald, lapis);
         FeatureUtils.register(
                 context,
                 configuredKey(REEF_SHRINES),
-                Feature.RANDOM_SELECTOR,
-                new RandomFeatureConfiguration(
+                ModFeatures.REEF_SHRINE,
+                new ReefShrineFeature.Config(frames, piles));
+        FeatureUtils.register(
+                context,
+                configuredKey(REEF_TEMPLES),
+                ModFeatures.REEF_TEMPLE,
+                new ReefTempleFeature.Config(
                         List.of(
-                                new WeightedPlacedFeature(
-                                        shrine(frames, BlockStateProvider.simple(Blocks.WET_SPONGE)), 0.15F),
-                                new WeightedPlacedFeature(
-                                        shrine(frames, depot(Blocks.GOLD_BLOCK, Blocks.RAW_GOLD_BLOCK, OreKind.GOLD)),
-                                        0.18F),
-                                new WeightedPlacedFeature(
-                                        shrine(frames, depot(Blocks.EMERALD_BLOCK, null, OreKind.EMERALD)), 0.21F),
-                                new WeightedPlacedFeature(
-                                        shrine(frames, depot(Blocks.LAPIS_BLOCK, null, OreKind.LAPIS)), 0.27F)),
-                        PlacementUtils.inlinePlaced(
-                                ModFeatures.REEF_SHRINE, new ReefShrineFeature.Config(frames, Optional.empty()))));
+                                RivesUndergroundBiomes.id("pearlstone_temple_0"),
+                                RivesUndergroundBiomes.id("pearlstone_temple_1")),
+                        piles,
+                        0.5F));
+        FeatureUtils.register(
+                context,
+                configuredKey(GRAND_REEF_TEMPLE),
+                ModFeatures.REEF_TEMPLE,
+                new ReefTempleFeature.Config(List.of(RivesUndergroundBiomes.id("pearlstone_temple_2")), piles, 0.0F));
         List<ResourceLocation> submarines = List.of(RivesUndergroundBiomes.id("lost_submarine"));
         FeatureUtils.register(
                 context,
@@ -524,11 +565,6 @@ public final class ModWorldgen {
                 ModFeatures.SUNKEN_SUBMARINE,
                 new SunkenSubmarineFeature.Config(
                         submarines, BuiltInLootTables.SHIPWRECK_TREASURE, BuiltInLootTables.SHIPWRECK_SUPPLY, true));
-    }
-
-    private static Holder<PlacedFeature> shrine(List<ResourceLocation> frames, BlockStateProvider pile) {
-        return PlacementUtils.inlinePlaced(
-                ModFeatures.REEF_SHRINE, new ReefShrineFeature.Config(frames, Optional.of(pile)));
     }
 
     private static BlockStateProvider depot(Block block, @Nullable Block raw, OreKind ore) {
@@ -633,14 +669,25 @@ public final class ModWorldgen {
                 PRISMARINE_GROTTO,
                 rare(60, HeightRangePlacement.uniform(VerticalAnchor.absolute(-40), VerticalAnchor.absolute(30))));
         place(context, configured, ANT_BURROW, List.of(RarityFilter.onAverageOnceEvery(32)));
+        place(context, configured, ANCIENT_LIBRARY, List.of());
+        place(context, configured, ANCIENT_OBSERVATORY, List.of());
 
         place(context, configured, PEARL_SAND_BLOB, scattered(10));
         place(context, configured, SAND_BLOB, scattered(7));
         place(context, configured, SANDSTONE_BLOB, scattered(8));
         place(context, configured, CALCITE_BLOB, scattered(5));
         place(context, configured, PRISMARINE_BLOB, scattered(4));
+        place(
+                context,
+                configured,
+                PRISMARINE_CRYSTAL_ORE,
+                List.of(
+                        CountPlacement.of(8),
+                        InSquarePlacement.spread(),
+                        HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(-35)),
+                        BiomeFilter.biome()));
         place(context, configured, COBBLESTONE_ROCKS, waterFloor(7));
-        place(context, configured, SANDSTONE_ROCKS, waterFloor(7));
+        place(context, configured, PEARLSTONE_ROCKS, waterFloor(4));
         place(context, configured, REEF_PATCHES, waterFloor(100));
         PlacementUtils.register(
                 context,
@@ -655,9 +702,12 @@ public final class ModWorldgen {
                 configured.getOrThrow(AquaticFeatures.WARM_OCEAN_VEGETATION),
                 waterFloor(60, CORAL_GROUND));
         place(context, configured, REEF_CARPET, List.of());
-        place(context, configured, REEF_SHRINES, List.of(RarityFilter.onAverageOnceEvery(16)));
-        place(context, configured, LOST_SUBMARINE, List.of(RarityFilter.onAverageOnceEvery(40)));
+        place(context, configured, GRAND_REEF_TEMPLE, List.of(RarityFilter.onAverageOnceEvery(48)));
+        place(context, configured, REEF_TEMPLES, List.of(RarityFilter.onAverageOnceEvery(16)));
+        place(context, configured, REEF_SHRINES, List.of(RarityFilter.onAverageOnceEvery(12)));
+        place(context, configured, LOST_SUBMARINE, List.of(RarityFilter.onAverageOnceEvery(24)));
         place(context, configured, SUNKEN_SUBMARINE, List.of(RarityFilter.onAverageOnceEvery(250)));
+        place(context, configured, REEF_GEODES, List.of(RarityFilter.onAverageOnceEvery(3)));
     }
 
     public static void addIceCaves(BiomeGenerationSettings.Builder generation) {
@@ -719,16 +769,21 @@ public final class ModWorldgen {
                 GenerationStep.Decoration.UNDERGROUND_DECORATION,
                 SANDSTONE_SPELEOTHEMS,
                 SAND_PATCH,
-                BURIED_RELIC);
+                BURIED_RELIC,
+                ANCIENT_LIBRARY,
+                ANCIENT_OBSERVATORY);
     }
 
     public static void addReef(BiomeGenerationSettings.Builder generation) {
         add(
                 generation,
                 GenerationStep.Decoration.UNDERGROUND_STRUCTURES,
+                GRAND_REEF_TEMPLE,
+                REEF_TEMPLES,
                 REEF_SHRINES,
                 LOST_SUBMARINE,
-                SUNKEN_SUBMARINE);
+                SUNKEN_SUBMARINE,
+                REEF_GEODES);
         add(
                 generation,
                 GenerationStep.Decoration.UNDERGROUND_ORES,
@@ -736,12 +791,13 @@ public final class ModWorldgen {
                 SAND_BLOB,
                 SANDSTONE_BLOB,
                 CALCITE_BLOB,
-                PRISMARINE_BLOB);
+                PRISMARINE_BLOB,
+                PRISMARINE_CRYSTAL_ORE);
         add(
                 generation,
                 GenerationStep.Decoration.UNDERGROUND_DECORATION,
                 COBBLESTONE_ROCKS,
-                SANDSTONE_ROCKS,
+                PEARLSTONE_ROCKS,
                 REEF_PATCHES,
                 REEF_CEILING_PATCHES,
                 HANGING_CORAL);
@@ -822,9 +878,10 @@ public final class ModWorldgen {
         return new OreConfiguration(new TagMatchTest(BlockTags.BASE_STONE_OVERWORLD), state, size);
     }
 
-    private static WeightedStateProvider oreRock(Host host) {
+    private static WeightedStateProvider pearlstoneRock() {
+        Host host = Host.PEARLSTONE;
         return weighted(SimpleWeightedRandomList.<BlockState>builder()
-                .add(host.block().defaultBlockState(), 20)
+                .add(host.block().defaultBlockState(), 128)
                 .add(ModBlocks.ore(host, OreKind.DIAMOND).defaultBlockState(), 10)
                 .add(ModBlocks.ore(host, OreKind.EMERALD).defaultBlockState(), 10)
                 .add(ModBlocks.ore(host, OreKind.REDSTONE).defaultBlockState(), 12)
@@ -832,7 +889,8 @@ public final class ModWorldgen {
                 .add(ModBlocks.ore(host, OreKind.GOLD).defaultBlockState(), 12)
                 .add(ModBlocks.ore(host, OreKind.IRON).defaultBlockState(), 10)
                 .add(ModBlocks.ore(host, OreKind.COPPER).defaultBlockState(), 10)
-                .add(ModBlocks.ore(host, OreKind.COAL).defaultBlockState(), 4));
+                .add(ModBlocks.ore(host, OreKind.COAL).defaultBlockState(), 4)
+                .add(ModBlocks.PRISMARINE_CRYSTAL_ORE.defaultBlockState(), 12));
     }
 
     private static WeightedStateProvider weighted(SimpleWeightedRandomList.Builder<BlockState> list) {

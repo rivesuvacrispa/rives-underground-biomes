@@ -1,6 +1,7 @@
 package com.rivesuvacrispa.rivesundergroundbiomes.world.feature;
 
 import com.mojang.serialization.Codec;
+import com.rivesuvacrispa.rivesundergroundbiomes.block.ModBlockTags;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.Zone;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +14,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,18 +22,19 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Function;
 
-abstract class ReefTemplateFeature<C extends FeatureConfiguration> extends Feature<C> {
+abstract class TemplateFeature<C extends FeatureConfiguration> extends Feature<C> {
     private static final int ROOF = 15;
     private static final int FLOOR_SCAN = 24;
 
-    ReefTemplateFeature(Codec<C> codec) {
+    TemplateFeature(Codec<C> codec) {
         super(codec);
     }
 
@@ -46,25 +47,33 @@ abstract class ReefTemplateFeature<C extends FeatureConfiguration> extends Featu
                 .orElseThrow(() -> new IllegalStateException("Missing structure template " + id));
     }
 
-    static StructurePlaceSettings settings(RandomSource random) {
-        return new StructurePlaceSettings()
+    static StructurePlaceSettings settings(RandomSource random, StructureProcessor... processors) {
+        StructurePlaceSettings settings = new StructurePlaceSettings()
                 .setRotation(Rotation.getRandom(random))
                 .setMirror(random.nextBoolean() ? Mirror.NONE : Mirror.FRONT_BACK)
-                .setRandom(random)
-                .addProcessor(BlockIgnoreProcessor.STRUCTURE_AND_AIR);
+                .setRandom(random);
+        for (StructureProcessor processor : processors) settings.addProcessor(processor);
+        return settings;
     }
 
     // where to place the template so it is centered on x z as far as the chunk allows
-    // null if it is wider than the chunk
+    // features can write 16 blocks into the neighbors
+    // returns null if it is wider than that
     @Nullable
     static BlockPos startInChunk(
-            StructureTemplate template, StructurePlaceSettings settings, ChunkPos chunk, int x, int minY, int z) {
+            StructureTemplate template,
+            StructurePlaceSettings settings,
+            ChunkPos chunk,
+            int reach, // how far it may stick out of the chunk
+            int x,
+            int minY,
+            int z) {
         BoundingBox box = template.getBoundingBox(settings, BlockPos.ZERO);
         int sizeX = box.getXSpan();
         int sizeZ = box.getZSpan();
-        if (sizeX > 16 || sizeZ > 16) return null;
-        int minX = Mth.clamp(x - sizeX / 2, chunk.getMinBlockX(), chunk.getMaxBlockX() + 1 - sizeX);
-        int minZ = Mth.clamp(z - sizeZ / 2, chunk.getMinBlockZ(), chunk.getMaxBlockZ() + 1 - sizeZ);
+        if (sizeX > 16 + 2 * reach || sizeZ > 16 + 2 * reach) return null;
+        int minX = Mth.clamp(x - sizeX / 2, chunk.getMinBlockX() - reach, chunk.getMaxBlockX() + 1 + reach - sizeX);
+        int minZ = Mth.clamp(z - sizeZ / 2, chunk.getMinBlockZ() - reach, chunk.getMaxBlockZ() + 1 + reach - sizeZ);
         return new BlockPos(minX - box.minX(), minY - box.minY(), minZ - box.minZ());
     }
 
@@ -90,15 +99,25 @@ abstract class ReefTemplateFeature<C extends FeatureConfiguration> extends Featu
             WorldGenLevel level,
             BoundingBox box,
             RandomSource random,
-            ResourceLocation chests,
-            ResourceLocation barrels) {
+            Function<BlockEntity, ResourceLocation> lootTable) {
         for (BlockPos pos :
                 BlockPos.betweenClosed(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
             BlockEntity entity = level.getBlockEntity(pos);
             if (entity instanceof RandomizableContainerBlockEntity) {
-                RandomizableContainerBlockEntity.setLootTable(
-                        level, random, pos, entity instanceof BarrelBlockEntity ? barrels : chests);
+                RandomizableContainerBlockEntity.setLootTable(level, random, pos, lootTable.apply(entity));
             }
+        }
+    }
+
+    // grows a column on through water, up or down, until it meets the floor or the ceiling
+    static void extendColumn(WorldGenLevel level, BlockPos end, int step, int max) {
+        BlockState column = level.getBlockState(end);
+        // an end broken by the ruin decay grows nothing
+        if (!column.is(ModBlockTags.PEARLSTONE_MASONRY)) return;
+        BlockPos.MutableBlockPos pos = end.mutable().move(0, step, 0);
+        for (int i = 0; i < max && isOpen(level.getBlockState(pos)); i++) {
+            Carving.set(level, pos, column);
+            pos.move(0, step, 0);
         }
     }
 

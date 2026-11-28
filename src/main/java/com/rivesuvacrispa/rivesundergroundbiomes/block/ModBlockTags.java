@@ -17,6 +17,10 @@ public final class ModBlockTags {
             TagKey.create(Registries.BLOCK, RivesUndergroundBiomes.id("reef_bare"));
     public static final TagKey<Block> REEF_STRUCTURE =
             TagKey.create(Registries.BLOCK, RivesUndergroundBiomes.id("reef_structure"));
+    // blocks that used to form reef structures
+    // reef carpet grows on them and the ruins decay them
+    public static final TagKey<Block> PEARLSTONE_MASONRY =
+            TagKey.create(Registries.BLOCK, RivesUndergroundBiomes.id("pearlstone_masonry"));
 
     private ModBlockTags() {}
 }

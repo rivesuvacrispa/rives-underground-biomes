@@ -71,6 +71,10 @@ public final class TagProviders {
             ModBlocks.permafrostBricks().forEach(pickaxe::add);
             ModBlocks.pearlstoneBricks().forEach(pickaxe::add);
             pickaxe.add(ModBlocks.DESERT_CHEST, ModBlocks.FROST_CHEST, ModBlocks.PRISMARINE_CHEST);
+            pickaxe.add(ModBlocks.BUDDING_PRISMARINE, ModBlocks.PRISMARINE_CRYSTAL_ORE);
+            ModBlocks.prismarineBuds().forEach(pickaxe::add);
+            ores.add(ModBlocks.PRISMARINE_CRYSTAL_ORE);
+            getOrCreateTagBuilder(BlockTags.NEEDS_STONE_TOOL).add(ModBlocks.PRISMARINE_CRYSTAL_ORE);
             getOrCreateTagBuilder(BlockTags.MINEABLE_WITH_AXE).add(ModBlocks.JUNGLE_CHEST, ModBlocks.SPIDER_CHEST);
             ModBlocks.chests().forEach(chest -> {
                 getOrCreateTagBuilder(BlockTags.FEATURES_CANNOT_REPLACE).add(chest);
@@ -91,6 +95,7 @@ public final class TagProviders {
             FabricTagBuilder bare =
                     getOrCreateTagBuilder(ModBlockTags.REEF_BARE).forceAddTag(BlockTags.BASE_STONE_OVERWORLD);
             for (OreKind kind : OreKind.VALUES) bare.forceAddTag(kind.blockTag);
+            bare.add(ModBlocks.PRISMARINE_CRYSTAL_ORE);
             FabricTagBuilder structure = getOrCreateTagBuilder(ModBlockTags.REEF_STRUCTURE)
                     .add(ModBlocks.PRISMARINE_CHEST)
                     .add(
@@ -143,8 +148,13 @@ public final class TagProviders {
                             net.minecraft.world.level.block.Blocks.RAW_GOLD_BLOCK,
                             net.minecraft.world.level.block.Blocks.EMERALD_BLOCK,
                             net.minecraft.world.level.block.Blocks.LAPIS_BLOCK,
-                            net.minecraft.world.level.block.Blocks.WET_SPONGE);
+                            net.minecraft.world.level.block.Blocks.WET_SPONGE,
+                            net.minecraft.world.level.block.Blocks.SEA_LANTERN)
+                    .add(ModBlocks.BUDDING_PRISMARINE);
+            ModBlocks.prismarineBuds().forEach(structure::add);
             ModBlocks.pearlstoneBricks().forEach(structure::add);
+            FabricTagBuilder masonry = getOrCreateTagBuilder(ModBlockTags.PEARLSTONE_MASONRY);
+            ModBlocks.pearlstoneBricks().forEach(masonry::add);
             getOrCreateTagBuilder(BlockTags.ICE).add(ModBlocks.THIN_ICE);
             shovel.add(ModBlocks.PEARL_SAND);
             getOrCreateTagBuilder(BlockTags.SAND).add(ModBlocks.PEARL_SAND);
@@ -270,9 +280,7 @@ public final class TagProviders {
                 if (zone != Zone.REEF)
                     getOrCreateTagBuilder(BiomeTags.HAS_MINESHAFT).add(zone.biome);
             }
-            getOrCreateTagBuilder(BiomeTags.IS_OVERWORLD).add(Zone.REEF.deepBiome);
-            getOrCreateTagBuilder(c(Registries.BIOME, "caves")).add(Zone.REEF.deepBiome);
-            getOrCreateTagBuilder(BiomeTags.PLAYS_UNDERWATER_MUSIC).add(Zone.REEF.biome, Zone.REEF.deepBiome);
+            getOrCreateTagBuilder(BiomeTags.PLAYS_UNDERWATER_MUSIC).add(Zone.REEF.biome);
             getOrCreateTagBuilder(BiomeTags.SNOW_GOLEM_MELTS).add(Zone.DESERT.biome);
             getOrCreateTagBuilder(c(Registries.BIOME, "climate_hot")).add(Zone.DESERT.biome, Zone.JUNGLE.biome);
             getOrCreateTagBuilder(c(Registries.BIOME, "climate_dry")).add(Zone.DESERT.biome);

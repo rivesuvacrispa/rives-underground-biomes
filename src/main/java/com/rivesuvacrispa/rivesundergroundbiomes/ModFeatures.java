@@ -1,10 +1,12 @@
 package com.rivesuvacrispa.rivesundergroundbiomes;
 
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.AncientRuinFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.AntBurrowFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.AttachedBlockFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.BeeNestFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.BuriedRelicFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.DungeonFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.FloodProcessor;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.GiantHiveFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.HangingCoralFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.IceBubbleFeature;
@@ -13,10 +15,13 @@ import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.MossCoatFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.NoiseNetFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.PrismarineGrottoFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.ReefCarpetFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.ReefGeodeFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.ReefShrineFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.ReefTempleFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.RibCageFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.RockFormationFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.RootTangleFeature;
+import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.RuinProcessor;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.SpeleothemFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.SpiderNestFeature;
 import com.rivesuvacrispa.rivesundergroundbiomes.world.feature.SunkenSubmarineFeature;
@@ -28,6 +33,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 
 public final class ModFeatures {
     public static final SpeleothemFeature SPELEOTHEM = register("speleothem", new SpeleothemFeature());
@@ -57,6 +63,14 @@ public final class ModFeatures {
     public static final ReefShrineFeature REEF_SHRINE = register("reef_shrine", new ReefShrineFeature());
     public static final SunkenSubmarineFeature SUNKEN_SUBMARINE =
             register("sunken_submarine", new SunkenSubmarineFeature());
+    public static final ReefTempleFeature REEF_TEMPLE = register("reef_temple", new ReefTempleFeature());
+    public static final AncientRuinFeature ANCIENT_RUIN = register("ancient_ruin", new AncientRuinFeature());
+    public static final ReefGeodeFeature REEF_GEODE = register("reef_geode", new ReefGeodeFeature());
+
+    public static final StructureProcessorType<FloodProcessor> FLOOD_PROCESSOR = Registry.register(
+            BuiltInRegistries.STRUCTURE_PROCESSOR, RivesUndergroundBiomes.id("flood"), () -> FloodProcessor.CODEC);
+    public static final StructureProcessorType<RuinProcessor> RUIN_PROCESSOR = Registry.register(
+            BuiltInRegistries.STRUCTURE_PROCESSOR, RivesUndergroundBiomes.id("ruin"), () -> RuinProcessor.CODEC);
 
     private static <C extends FeatureConfiguration, F extends Feature<C>> F register(String name, F feature) {
         return Registry.register(BuiltInRegistries.FEATURE, RivesUndergroundBiomes.id(name), feature);

@@ -2,10 +2,12 @@ package com.rivesuvacrispa.rivesundergroundbiomes.world.feature;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.rivesuvacrispa.rivesundergroundbiomes.RivesUndergroundBiomes;
+import com.rivesuvacrispa.rivesundergroundbiomes.block.ModBlockTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
@@ -15,22 +17,23 @@ import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 import java.util.List;
-import java.util.Optional;
 
-public class ReefShrineFeature extends ReefTemplateFeature<ReefShrineFeature.Config> {
-    public record Config(List<ResourceLocation> frames, Optional<BlockStateProvider> pile)
+public class ReefShrineFeature extends TemplateFeature<ReefShrineFeature.Config> {
+    public record Config(List<ResourceLocation> frames, List<BlockStateProvider> piles)
             implements FeatureConfiguration {
         public static final Codec<Config> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                         ResourceLocation.CODEC.listOf().fieldOf("frames").forGetter(Config::frames),
-                        BlockStateProvider.CODEC.optionalFieldOf("pile").forGetter(Config::pile))
+                        ExtraCodecs.nonEmptyList(BlockStateProvider.CODEC.listOf())
+                                .fieldOf("piles")
+                                .forGetter(Config::piles))
                 .apply(instance, Config::new));
     }
 
-    public static final ResourceLocation LOOT = RivesUndergroundBiomes.id("chests/reef_shrine");
     private static final int TRIES = 16;
     // template is intended to be placed this much into the ground
     private static final int BURIED = 4;
@@ -38,7 +41,8 @@ public class ReefShrineFeature extends ReefTemplateFeature<ReefShrineFeature.Con
     private static final int MIN_ROOM = 7;
     // how far the corner columns grow on to reach a lower floor or a higher ceiling
     private static final int MAX_COLUMN = 8;
-    private static final int SPAWNER_Y = 7;
+    private static final float MIN_DECAY = 0.1F;
+    private static final float MAX_DECAY = 0.2F;
 
     public ReefShrineFeature() {
         super(Config.CODEC);
@@ -56,19 +60,17 @@ public class ReefShrineFeature extends ReefTemplateFeature<ReefShrineFeature.Con
         for (int i = 0; i < TRIES; i++) {
             BlockPos floor = reefFloor(level, chunk, biomes, random);
             if (floor == null) continue;
-            StructurePlaceSettings settings = settings(random);
+            float decay = Mth.randomBetween(random, MIN_DECAY, MAX_DECAY);
+            StructurePlaceSettings settings =
+                    settings(random, BlockIgnoreProcessor.STRUCTURE_AND_AIR, new RuinProcessor(decay, 1));
             BlockPos start =
-                    startInChunk(template, settings, chunkPos, floor.getX(), floor.getY() - BURIED, floor.getZ());
+                    startInChunk(template, settings, chunkPos, 0, floor.getX(), floor.getY() - BURIED, floor.getZ());
             if (start == null) return false;
             if (!fits(level, template.getBoundingBox(settings, start))) continue;
 
             BoundingBox box = place(level, template, settings, start, random);
             extendColumns(level, box);
-            if (config.pile().isPresent()) {
-                pile(level, box, config.pile().get(), random);
-            } else {
-                fillContainers(level, box, random, LOOT, LOOT);
-            }
+            ReefTreasure.placeAll(level, template, settings, start, config.piles(), random);
             return true;
         }
         return false;
@@ -92,8 +94,10 @@ public class ReefShrineFeature extends ReefTemplateFeature<ReefShrineFeature.Con
             }
         }
         // coral tube walls and hanging clusters in the room
+        // or a temple from the next chunk
         for (BlockPos pos : BlockPos.betweenClosed(box.minX(), roomY, box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
-            if (level.getBlockState(pos).is(BlockTags.CORAL_BLOCKS)) return false;
+            BlockState state = level.getBlockState(pos);
+            if (state.is(BlockTags.CORAL_BLOCKS) || state.is(ModBlockTags.REEF_STRUCTURE)) return false;
         }
         return true;
     }
@@ -108,46 +112,9 @@ public class ReefShrineFeature extends ReefTemplateFeature<ReefShrineFeature.Con
     private static void extendColumns(WorldGenLevel level, BoundingBox box) {
         for (int x : new int[] {box.minX(), box.maxX()}) {
             for (int z : new int[] {box.minZ(), box.maxZ()}) {
-                extend(level, new BlockPos(x, box.minY(), z), -1);
-                extend(level, new BlockPos(x, box.maxY(), z), 1);
+                extendColumn(level, new BlockPos(x, box.minY(), z), -1, MAX_COLUMN);
+                extendColumn(level, new BlockPos(x, box.maxY(), z), 1, MAX_COLUMN);
             }
         }
-    }
-
-    private static void extend(WorldGenLevel level, BlockPos end, int step) {
-        BlockState column = level.getBlockState(end);
-        BlockPos.MutableBlockPos pos = end.mutable().move(0, step, 0);
-        for (int i = 0; i < MAX_COLUMN && isOpen(level.getBlockState(pos)); i++) {
-            Carving.set(level, pos, column);
-            pos.move(0, step, 0);
-        }
-    }
-
-    private static void pile(WorldGenLevel level, BoundingBox box, BlockStateProvider pile, RandomSource random) {
-        BlockPos spawner = box.getCenter().atY(box.minY() + SPAWNER_Y);
-        BlockPos chest = spawner.above();
-        Carving.set(level, chest, pile.getState(random, chest));
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (int dy = -1; dy <= 2; dy++) {
-            for (int dx = -2; dx <= 2; dx++) {
-                for (int dz = -2; dz <= 2; dz++) {
-                    if (!inPile(dx, dy, dz, random)) continue;
-                    pos.setWithOffset(spawner, dx, dy, dz);
-                    if (isOpen(level.getBlockState(pos))) Carving.set(level, pos, pile.getState(random, pos));
-                }
-            }
-        }
-    }
-
-    private static boolean inPile(int dx, int dy, int dz, RandomSource random) {
-        int ax = Math.abs(dx);
-        int az = Math.abs(dz);
-        return switch (dy) {
-            case -1 -> ax <= 1 && az <= 1 || ax + az == 2 && (ax == 0 || az == 0) && random.nextBoolean();
-            case 0 -> ax <= 1 && az <= 1;
-            case 1 -> ax + az <= 1 || ax == 1 && az == 1 && random.nextInt(4) == 0;
-            case 2 -> ax + az == 0 && random.nextBoolean();
-            default -> false;
-        };
     }
 }

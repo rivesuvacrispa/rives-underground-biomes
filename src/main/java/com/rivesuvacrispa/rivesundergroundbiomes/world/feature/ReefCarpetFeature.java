@@ -65,7 +65,7 @@ public class ReefCarpetFeature extends Feature<ReefCarpetFeature.Config> {
                             && !isWater(below)
                             && below.isFaceSturdy(level, pos.below(), Direction.UP)
                             && !below.is(Blocks.MAGMA_BLOCK)
-                            && !below.is(ModBlockTags.REEF_STRUCTURE)
+                            && (!below.is(ModBlockTags.REEF_STRUCTURE) || below.is(ModBlockTags.PEARLSTONE_MASONRY))
                             && biomes.inBiome(x, y, z, Zone.REEF)) {
                         placed |= decorate(level, pos.immutable(), below, random, config);
                     }

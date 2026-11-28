@@ -28,7 +28,6 @@ public class LangProvider extends FabricLanguageProvider {
         builder.add(biomeKey(Zone.JUNGLE.biome), "Underground Jungle");
         builder.add(biomeKey(Zone.ICE.biome), "Ice Caves");
         builder.add(biomeKey(Zone.REEF.biome), "Underground Reef");
-        builder.add(biomeKey(Zone.REEF.deepBiome), "Underground Ocean");
         builder.add(ModBlocks.QUICKSAND, "Quicksand");
         builder.add(ModBlocks.QUICKSAND_BUCKET, "Quicksand Bucket");
         builder.add(ModBlocks.THIN_ICE, "Thin Ice");
@@ -38,6 +37,9 @@ public class LangProvider extends FabricLanguageProvider {
         ModBlocks.permafrostBricks().forEach(block -> builder.add(block, titleOf(block)));
         ModBlocks.pearlstoneBricks().forEach(block -> builder.add(block, titleOf(block)));
         ModBlocks.chests().forEach(block -> builder.add(block, titleOf(block)));
+        ModBlocks.prismarineBuds().forEach(block -> builder.add(block, titleOf(block)));
+        builder.add(ModBlocks.BUDDING_PRISMARINE, "Budding Prismarine");
+        builder.add(ModBlocks.PRISMARINE_CRYSTAL_ORE, "Prismarine Crystal Ore");
         builder.add(ModEntities.ANT, "Ant");
         builder.add(ModEntities.MUMMY_SKELETON, "Mummy Skeleton");
         builder.add(ModEntities.FROZEN, "Frozen");

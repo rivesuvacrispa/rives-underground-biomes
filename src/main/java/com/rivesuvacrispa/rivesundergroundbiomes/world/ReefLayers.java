@@ -59,6 +59,10 @@ public final class ReefLayers {
     private static final int PAD = ERODE_XZ + 1;
     // the 3 nodes a chunk interpolates between plus the padding on both sides
     private static final int NODES_XZ = 3 + 2 * PAD;
+    // the fill of other caves ends on a noisy surface about a node inside the reef
+    private static final double FILL_DEPTH = 1; // erosion steps a node survives
+    private static final double FILL_WOBBLE = 0.6;
+    private static final double FILL_ROUGH = 0.25;
     private static final int STRUCTURE_MARGIN = 4;
     // structure pieces reach about 8 chunks from their start
     // every chunk that close has its starts at the carver stage
@@ -100,6 +104,7 @@ public final class ReefLayers {
     private static final long ROUGH_SALT = 0x5EEF_0005L;
     private static final long TUBE_SALT = 0x5EEF_0006L;
     private static final long HOLE_SALT = 0x5EEF_0007L;
+    private static final long EDGE_SALT = 0x5EEF_0008L;
 
     private static final BlockState WATER = Blocks.WATER.defaultBlockState();
     private static final BlockState STONE = Blocks.STONE.defaultBlockState();
@@ -137,6 +142,7 @@ public final class ReefLayers {
     private final ImprovedNoise chambers;
     private final ImprovedNoise pillars;
     private final ImprovedNoise rough;
+    private final ImprovedNoise edge;
 
     private record Layer(double center, double thick, double open) {}
 
@@ -164,6 +170,7 @@ public final class ReefLayers {
         this.chambers = SeededNoise.get(seed, CHAMBER_SALT);
         this.pillars = SeededNoise.get(seed, PILLAR_SALT);
         this.rough = SeededNoise.get(seed, ROUGH_SALT);
+        this.edge = SeededNoise.get(seed, EDGE_SALT);
     }
 
     public static void carve(
@@ -284,7 +291,7 @@ public final class ReefLayers {
             for (int iz = PAD; iz <= PAD + 2; iz++) {
                 for (int iy = 0; iy < nodesY; iy++) {
                     int i = index(ix, iy, iz);
-                    solid[i] = reef[i] ? 1 : 0;
+                    solid[i] = depth(ix, iy, iz);
                     anySolid |= reef[i];
                 }
             }
@@ -292,7 +299,7 @@ public final class ReefLayers {
         if (!anySolid) return;
         for (int ix = ERODE_XZ; ix < NODES_XZ - ERODE_XZ; ix++) {
             for (int iz = ERODE_XZ; iz < NODES_XZ - ERODE_XZ; iz++) {
-                for (int iy = 0; iy < nodesY; iy++) cave[index(ix, iy, iz)] = eroded(ix, iy, iz) ? 1 : 0;
+                for (int iy = 0; iy < nodesY; iy++) cave[index(ix, iy, iz)] = reefAround(ix, iy, iz, ERODE_XZ) ? 1 : 0;
             }
         }
 
@@ -376,7 +383,8 @@ public final class ReefLayers {
                             } else {
                                 placed = tubeWall(columnTubes[column], x, y, z);
                                 if (placed == null && isOpen(state)) {
-                                    boolean filled = y <= fillTop[column] && lerpY(solidColumn, column, y) > 0;
+                                    boolean filled =
+                                            y <= fillTop[column] && fills(lerpY(solidColumn, column, y), x, y, z);
                                     // the band between the fill line and the sea floor around a blue hole
                                     boolean sealed = hole && holeDistance[column] <= holeReach + HOLE_SEAL;
                                     if (filled || sealed) placed = solidAt(x, y, z);
@@ -611,9 +619,26 @@ public final class ReefLayers {
         return Math.floorMod(Mth.getSeed(x, y, z), 8) >= y ? DEEPSLATE : STONE;
     }
 
-    private boolean eroded(int ix, int iy, int iz) {
-        for (int dx = -ERODE_XZ; dx <= ERODE_XZ; dx++) {
-            for (int dz = -ERODE_XZ; dz <= ERODE_XZ; dz++) {
+    private boolean fills(double depth, int x, int y, int z) {
+        if (depth >= FILL_DEPTH + FILL_WOBBLE + FILL_ROUGH) return true;
+        if (depth <= FILL_DEPTH - FILL_WOBBLE - FILL_ROUGH) return false;
+        double wobble = FILL_WOBBLE * edge.noise(x / 16.0, y / 12.0, z / 16.0)
+                + FILL_ROUGH * edge.noise(x / 5.0, y / 5.0 + 100, z / 5.0);
+        return depth + wobble > FILL_DEPTH;
+    }
+
+    private int depth(int ix, int iy, int iz) {
+        if (!reef[index(ix, iy, iz)]) return 0;
+        for (int r = 1; r <= ERODE_XZ; r++) {
+            if (!reefAround(ix, iy, iz, r)) return r;
+        }
+        return ERODE_XZ + 1;
+    }
+
+    // every node r around in x z and ERODE_Y around in y is reef
+    private boolean reefAround(int ix, int iy, int iz, int r) {
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dz = -r; dz <= r; dz++) {
                 for (int dy = -ERODE_Y; dy <= ERODE_Y; dy++) {
                     int y = Mth.clamp(iy + dy, 0, nodesY - 1);
                     if (!reef[index(ix + dx, y, iz + dz)]) return false;
